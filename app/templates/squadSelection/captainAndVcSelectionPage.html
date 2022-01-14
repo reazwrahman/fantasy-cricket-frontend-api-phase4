@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}FantasySquad - Captain And Vice-Captain (Admin Only){% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Captain And Vice-Captain Selection</h1>
+</div> 
+
+<h4> <font size="3"
+    face="verdana"
+    color="red"> {{time_left}} </h4> 
+<br> 
+
+<font size="3"
+    face="verdana"
+    color="black">
+
+<div class="col-md-4">
+    {{ wtf.quick_form(form) }}
+    <br> 
+</div>    
+
+{% endblock %}

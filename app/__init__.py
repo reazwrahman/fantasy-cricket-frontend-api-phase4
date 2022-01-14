@@ -40,6 +40,15 @@ def create_app(config_name):
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
 
     from .api import api as api_blueprint
-    app.register_blueprint(api_blueprint, url_prefix='/api/v1')
+    app.register_blueprint(api_blueprint, url_prefix='/api/v1') 
+
+    from .gameSetup import gameSetup as gameSetup_blueprint
+    app.register_blueprint(gameSetup_blueprint, url_prefix='/gameSetup') 
+
+    from .squadSelection import squadSelection as squadSelection_blueprint
+    app.register_blueprint(squadSelection_blueprint, url_prefix='/squadSelection') 
+
+    from .fantasyContest import fantasyContest as fantasyContest_blueprint
+    app.register_blueprint(fantasyContest_blueprint, url_prefix='/fantasyContest') 
 
     return app

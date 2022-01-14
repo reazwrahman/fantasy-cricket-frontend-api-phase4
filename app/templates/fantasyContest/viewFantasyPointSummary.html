@@ -1,0 +1,38 @@
+{% extends "base.html" %} 
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %} 
+  <h3> Full Squad Summary: {{ df_display['user_name'] }} </h3>
+  <table id="data" class="table table-striped">
+    <thead>
+      <tr> 
+        {% for heading in df_display['headings'] %}
+        <th>{{heading}}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in df_display['rows'] %}
+        <tr> 
+          {% for each in row %}
+            <td>{{ each }}</td>
+          {% endfor %}     
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>  
+  <h4> Total Points: {{ df_display['total_points'] }}</h4> 
+
+  <br>
+  <div class="col-md-4">
+    {{ wtf.quick_form(form) }}
+  </div> 
+  <br> 
+  <br>
+
+  <h6> *** Batting Milestone points: for every 25 runs increment following weights are added  
+    25:5, 50:15, 75:30, 100:50, 125:50, 150:50, 175:50, 200:50 </h6>
+  <h6>*** Bowling Milestone Points: 1:0, 2:5, 3:15, 4:30, 5:50, 6:50, 7:50, 8:50 </h6>
+
+  
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}SetupPage{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+         <h1> Fantasy Squad </h1>        
+    </div> 
+
+<h4> <font size="3"
+    face="verdana"
+    color="red"> {{time_left}} </h4> 
+<br>
+
+<h3><font size="3"
+    face="verdana"
+    color="black"> {{instruction}} </h3> 
+
+{{ wtf.quick_form(form) }}  
+   
+{% endblock %}

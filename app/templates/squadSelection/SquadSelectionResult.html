@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Final Squad{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+         <h3> Click Submit Below to Save your Squad </h3> 
+         
+    </div> 
+
+<h4> <font size="3"
+    face="verdana"
+    color="red"> {{time_left}} </h4> 
+<br>
+
+<h3><font size="3"
+    face="verdana"
+    color="black">
+
+<h2> selections </h2>        
+{% for player in selections %}
+  <p> {{ loop.index}}. {{player}} </p>
+{% endfor %}  
+
+<br/> 
+<p> Captain: {{Cap_Vc_Dict['captain']}}</p> 
+<p> Captain: {{Cap_Vc_Dict['vice_captain']}}</p> 
+
+<br/>
+
+<h5> Go back in your browser to make any changes, otherwise Confirm your squad by hitting the Submit below </h5>
+
+{{ wtf.quick_form(form) }} 
+
+{% endblock %}
