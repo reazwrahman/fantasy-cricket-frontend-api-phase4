@@ -11,6 +11,7 @@ from . import db, login_manager
 
 
 class Permission:
+    GENERAL = 0
     ADMIN = 16
 
 
@@ -30,8 +31,8 @@ class Role(db.Model):
     @staticmethod
     def insert_roles():
         roles = {
-            'User': [],           
-            'Administrator': [Permission.ADMIN]
+            'User': [Permission.GENERAL],           
+            'Administrator': [Permission.GENERAL, Permission.ADMIN],
         }
         default_role = 'User'
         for r in roles:
@@ -76,7 +77,7 @@ class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
-            if self.email == current_app.config['FLASKY_ADMIN']:
+            if self.email == current_app.config['FLASKY_ADMIN']: 
                 self.role = Role.query.filter_by(name='Administrator').first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()

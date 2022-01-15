@@ -12,7 +12,7 @@ class Config:
     MAIL_PASSWORD = 'FantasySquad@2022' #os.environ.get('MAIL_PASSWORD')
     FLASKY_MAIL_SUBJECT_PREFIX = '[CMCC Fantasy Squad Authentication]'
     FLASKY_MAIL_SENDER = 'Fantasy Squad Admin <fantasysquad30@gmail.com>'
-    FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
+    FLASKY_ADMIN = 'fantasysquad30@gmail.com' #os.environ.get('FLASKY_ADMIN')
     SSL_REDIRECT = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True

@@ -10,6 +10,23 @@
     <h1> {% if current_user.is_authenticated %} Welcome Back {{ current_user.username }} {% endif %}</h1>
 </div>
 
+<div class="post-tabs">
+    <ul class="nav nav-tabs"> 
+        
+        {% if current_user.is_authenticated %}
+        <li class="active"><a href="{{ url_for('squadSelection.DisplayActiveGames')}}">Join A Fantasy League</a></li> 
+        {% endif %}
+        
+        <li class="active"><a href="{{ url_for('fantasyContest.displayActiveGames')}}">View League Results </a></li>
+        
+        {% if current_user.is_authenticated %} 
+        <li class="active"><a href="{{ url_for('gameSetup.SetupGame')}}">Setup Game (Admin Only) </a></li>
+        {% endif %}  
+
+
+    </ul>
+    {% include '_posts.html' %}
+</div>
 
 {% endblock %} 
 

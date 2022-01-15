@@ -1,4 +1,6 @@
-from flask import render_template, redirect, request, url_for, flash, session
+from app.decorators import admin_required
+from flask import render_template, redirect, request, url_for, flash, session 
+from flask_login import login_required, current_user
 
 from . import gameSetup
 from .. import db
@@ -6,8 +8,9 @@ from ..models import GameDetails
 from .forms import GameSetupForm, ActiveGamesForm, AddScoreCardForm, DeactivateGameForm, UpdateGameDetailsForm
 
 
-
-@gameSetup.route('/', methods=['GET', 'POST'])
+@gameSetup.route('/', methods=['GET', 'POST']) 
+@admin_required
+@login_required 
 def SetupGame():
     form = GameSetupForm()
     if form.validate_on_submit():  
@@ -28,7 +31,9 @@ def SetupGame():
 
 
 
-@gameSetup.route('/AddScoreCard_Part1', methods=['GET', 'POST'])
+@gameSetup.route('/AddScoreCard_Part1', methods=['GET', 'POST']) 
+@admin_required
+@login_required 
 def AddScoreCard_Part1(): 
     active_games_query = GameDetails.query.filter_by(game_status = 'Active')
     active_games_all=active_games_query.all()
@@ -48,7 +53,11 @@ def AddScoreCard_Part1():
     return render_template('gameSetup/displayActiveGames.html',form=form)
 
 
-@gameSetup.route('/AddScoreCard_Part2', methods=['GET', 'POST'])
+
+
+@gameSetup.route('/AddScoreCard_Part2', methods=['GET', 'POST']) 
+@admin_required
+@login_required 
 def AddScoreCard_Part2(): 
     match_id = session.get('selected_game_id') 
     game_object = GameDetails.query.filter_by(match_id=match_id).first()
@@ -64,7 +73,10 @@ def AddScoreCard_Part2():
     return render_template('gameSetup/addScoreCard.html', game_title=game_object.game_title, form=form) 
 
 
-@gameSetup.route('/DeactivateGame', methods=['GET', 'POST'])
+
+@gameSetup.route('/DeactivateGame', methods=['GET', 'POST']) 
+@admin_required
+@login_required 
 def DeactivateGame(): 
     active_games_query = GameDetails.query.filter_by(game_status = 'Active')
     active_games_all=active_games_query.all()
@@ -86,7 +98,11 @@ def DeactivateGame():
 
     return render_template('gameSetup/displayActiveGames.html',form=form) 
 
-@gameSetup.route('/UpdateGameDetails', methods=['GET', 'POST'])
+
+
+@gameSetup.route('/UpdateGameDetails', methods=['GET', 'POST']) 
+@admin_required
+@login_required 
 def UpdateGameDetails(): 
     active_games_query = GameDetails.query.filter_by(game_status = 'Active')
     active_games_all=active_games_query.all()
