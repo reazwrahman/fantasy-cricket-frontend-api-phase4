@@ -6,8 +6,15 @@
 {% block page_content %}
     <div class="page-header">
          <h1> This Contest Hasn't started yet, Waiting for Score Card.   
-             Please Check Back Again Once the Game has Started </h1> 
-         
-    </div> 
+             Please Check Back Again Once the Game has Started </h1>          
+    </div>  
+
+<br> 
+<h2> Active Contestants For this Game: </h2>      
+<br> 
+{% for contestant in active_contestants %}
+
+  <h2> {{ loop.index}}. {{contestant}} </h2>
+{% endfor %} 
 
 {% endblock %}

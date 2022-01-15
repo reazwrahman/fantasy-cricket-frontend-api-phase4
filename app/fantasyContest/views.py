@@ -37,7 +37,8 @@ def displayContestRanking():
     scorecard_link=game_object.scorecard_link 
 
     if scorecard_link == None or len(scorecard_link) < 5: ## just an arbitrary number to avoid empty string 
-        return render_template('fantasyContest/waitForScorecardPage.html') 
+        active_contestants = __getNamesofActiveContestants__(match_id)
+        return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
     
     else:
         ranked_contestants = __rankContestants__ (match_id=match_id)  
@@ -63,7 +64,8 @@ def displayFullSquadSummary():
     scorecard_link=game_object.scorecard_link 
 
     if scorecard_link == None or len(scorecard_link) < 5: ## just an arbitrary number to avoid empty string 
-        return render_template('fantasyContest/waitForScorecardPage.html') 
+        active_contestants = __getNamesofActiveContestants__(match_id)
+        return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
     
     else:
         form = ViewDetailsForm()     
@@ -97,8 +99,8 @@ def viewMyFantasyPoint():
     scorecard_link=game_object.scorecard_link 
 
     if scorecard_link == None or len(scorecard_link) < 5: ## just an arbitrary number to avoid empty string 
-        return render_template('fantasyContest/waitForScorecardPage.html') 
-    
+        active_contestants = __getNamesofActiveContestants__(match_id)
+        return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
     else: 
         form = ViewDetailsForm()   
         Fantasy_Calculator = __getFantasyCalculatorObject__(match_id=match_id, user_id = current_user.id)
@@ -183,7 +185,13 @@ def __rankContestants__ (match_id):
     return contestants_records
     
 
-
+def __getNamesofActiveContestants__(match_id): 
+    squad_object=SelectedSquad.query.filter_by(match_id=match_id).all()    
+    active_contestants=[] 
+    for each in squad_object: 
+        each_user_id=each.user_id 
+        active_contestants.append(User.query.filter_by(id=each_user_id).first().username) 
+    return active_contestants
 
 
 def __getAllContestantsRecords__(match_id): 

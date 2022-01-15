@@ -7,15 +7,14 @@
 {% block page_content %}
 <div class="page-header">
     <h1> CMCC Fantasy Cricket League </h1>
-    <h1> {% if current_user.is_authenticated %} Welcome Back {{ current_user.username }} {% endif %}</h1>
+    <h1> {% if current_user.is_authenticated %} Welcome Back {{ current_user.username }} 
+        {% else %} You are not Logged In {% endif %}</h1>
 </div>
 
 <div class="post-tabs">
     <ul class="nav nav-tabs"> 
         
-        {% if current_user.is_authenticated %}
         <li class="active"><a href="{{ url_for('squadSelection.displayNavigations')}}">Join A Fantasy League</a></li> 
-        {% endif %}
         
         <li class="active"><a href="{{ url_for('fantasyContest.displayActiveGames')}}">View League Results </a></li>
         

@@ -8,12 +8,12 @@
 <h2> Full Squad </h2>  
 <br>       
 {% for player in display_dict['full_squad'] %}
-  <p> {{ loop.index}}. {{player}} </p>
+  <h4> {{ loop.index}}. {{player}} </h4>
 {% endfor %}  
 
 <br/> 
-<p> Captain: {{display_dict['captain']}}</p> 
-<p> Vice Captain: {{display_dict['vice_captain']}}</p> 
+<h4> Captain: {{display_dict['captain']}}</h4> 
+<h4> Vice Captain: {{display_dict['vice_captain']}}</h4> 
 
 <br/>
 

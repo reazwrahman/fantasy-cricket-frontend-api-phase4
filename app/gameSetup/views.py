@@ -74,7 +74,8 @@ def AddScoreCard_Part2():
         game_object.points_per_run = form.points_per_run.data 
         game_object.points_per_wicket = form.points_per_wicket.data
         db.session.commit()  
-        flash('Additional Game Details have been successfully updated in database') 
+        flash('Additional Game Details have been successfully updated in database')  
+        return redirect (url_for('gameSetup.displayNavigations'))
     
     return render_template('gameSetup/addScoreCard.html', game_title=game_object.game_title, form=form) 
 
