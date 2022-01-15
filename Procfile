@@ -1,1 +1,1 @@
-web: gunicorn flasky:app
+web: gunicorn fantasy_squad:app
