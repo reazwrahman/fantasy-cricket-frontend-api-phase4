@@ -6,8 +6,14 @@ Created on Sun Jan  2 11:04:29 2022
 @author: Reaz
 """
 
-#python includes 
+
+# python includes
+#import requests
+#from bs4 import BeautifulSoup
 import pandas as pd
+#import re
+#import numpy as np 
+
 
 
 ## Project Includes 
@@ -192,7 +198,9 @@ class FantasyPointsForFullSquad(object):
         rows=[]
         for i in range(len(df)): 
             rows.append(list(df.loc[i]))
-        return rows
+        return rows 
+    
+
               
 def test():    
     #score_url='https://www.espncricinfo.com/series/india-in-south-africa-2021-22-1277060/south-africa-vs-india-1st-test-1277079/full-scorecard'

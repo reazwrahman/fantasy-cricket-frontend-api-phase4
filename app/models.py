@@ -4,14 +4,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from markdown import markdown
 import bleach
-from flask import current_app, request, url_for
+from flask import current_app, request, url_for, flash
 from flask_login import UserMixin, AnonymousUserMixin
 from app.exceptions import ValidationError
 from . import db, login_manager
 
 
 class Permission:
-    GENERAL = 0
     ADMIN = 16
 
 
@@ -31,8 +30,8 @@ class Role(db.Model):
     @staticmethod
     def insert_roles():
         roles = {
-            'User': [Permission.GENERAL],           
-            'Administrator': [Permission.GENERAL, Permission.ADMIN],
+            'User': [],           
+            'Administrator': [Permission.ADMIN],
         }
         default_role = 'User'
         for r in roles:
@@ -150,10 +149,10 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
-    def can(self, perm):
+    def can(self, perm): 
         return self.role is not None and self.role.has_permission(perm)
 
-    def is_administrator(self):
+    def is_administrator(self): 
         return self.can(Permission.ADMIN)
 
     def to_json(self):

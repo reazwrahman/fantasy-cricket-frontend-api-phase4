@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Final Squad{% endblock %}
+
+{% block page_content %} 
+
+<h2> Full Squad </h2>  
+<br>       
+{% for player in display_dict['full_squad'] %}
+  <p> {{ loop.index}}. {{player}} </p>
+{% endfor %}  
+
+<br/> 
+<p> Captain: {{display_dict['captain']}}</p> 
+<p> Vice Captain: {{display_dict['vice_captain']}}</p> 
+
+<br/>
+
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}FantasySquad {% endblock %}
+
+{% block content %}  
+
+<h2> Review the points system for this game before selecting your squad: </h2>  
+<br> </br>
+
+<h4> <font size="3"
+    face="verdana"
+    color="red"> {{time_left}} </h4> 
+<br> 
+
+<font size="3"
+    face="verdana"
+    color="black">
+
+<br/> 
+<p> Points Per Run: {{display_dict['points_per_run']}}</p> 
+<p> Points Per Wicket: {{display_dict['points_per_wicket']}}</p>  
+<p> Points Per Catch: {{display_dict['points_per_catch']}}</p>  
+<br> 
+<p> *** Batting Milestone points: for every 25 runs increment, following weights are added:  
+    25:5, 50:15, 75:30, 100:50, 125:50, 150:50, 175:50, 200:50 </p>
+<p>*** Bowling Milestone Points: 1:0, 2:5, 3:15, 4:30, 5:50, 6:50, 7:50, 8:50 </p>
+
+<br/>
+
+<div class="col-md-4">
+    {{ wtf.quick_form(form) }}
+    <br> 
+</div>    
+
+{% endblock %}

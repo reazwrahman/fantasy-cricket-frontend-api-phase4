@@ -14,13 +14,13 @@
     <ul class="nav nav-tabs"> 
         
         {% if current_user.is_authenticated %}
-        <li class="active"><a href="{{ url_for('squadSelection.DisplayActiveGames')}}">Join A Fantasy League</a></li> 
+        <li class="active"><a href="{{ url_for('squadSelection.displayNavigations')}}">Join A Fantasy League</a></li> 
         {% endif %}
         
         <li class="active"><a href="{{ url_for('fantasyContest.displayActiveGames')}}">View League Results </a></li>
         
-        {% if current_user.is_authenticated %} 
-        <li class="active"><a href="{{ url_for('gameSetup.SetupGame')}}">Setup Game (Admin Only) </a></li>
+        {% if isAdmin: %} 
+        <li class="active"><a href="{{ url_for('gameSetup.displayNavigations')}}">Setup Game (Admin Only) </a></li>
         {% endif %}  
 
 

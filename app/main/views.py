@@ -33,11 +33,14 @@ def server_shutdown():
 
 
 @main.route('/', methods=['GET', 'POST'])
-def index():
+def index():  
+    isAdmin=False
+
     if current_user.is_authenticated:
-        pass
+        user_object=User.query.filter_by(id=current_user.id).first() 
+        isAdmin=user_object.is_administrator()
     
-    return render_template('index.html')
+    return render_template('index.html', isAdmin=isAdmin)
 
 
 

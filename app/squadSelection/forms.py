@@ -51,9 +51,10 @@ class Cap_Vc_SelectionForm(FlaskForm):
 class FinalizeSquadForm(FlaskForm):    
     submit = SubmitField('Submit')   
 
+
 #### -------------------------------------- #####
 
-class EditSquadForm(FlaskForm): 
-    edit_squad = SubmitField ('Edit Squad') 
+class ContinueButton(FlaskForm): 
+    next = SubmitField ('Continue') 
 
 #### -------------------------------------- #####

@@ -1,5 +1,5 @@
 from flask import render_template, redirect, request, url_for, flash, session
-from flask_login import current_user 
+from flask_login import current_user, login_required 
 from ast import literal_eval 
 from datetime import datetime
 from pytz import timezone 
@@ -7,14 +7,21 @@ from pytz import timezone
 from . import squadSelection
 from .. import db
 from ..models import GameDetails, SelectedSquad
-from .forms import ActiveGamesForm, PlayerSelectionFormFactory, FinalizeSquadForm,  EditSquadForm, Cap_Vc_SelectionForm 
+from .forms import ActiveGamesForm, PlayerSelectionFormFactory, FinalizeSquadForm, ContinueButton, Cap_Vc_SelectionForm 
 
 from .ListOfAllPlayers import AllPlayers 
 
 
 
-@squadSelection.route('/', methods=['GET', 'POST'])
-def DisplayActiveGames(): 
+@squadSelection.route('/displayNavigations', methods=['GET', 'POST']) 
+@login_required 
+def displayNavigations(): 
+    return render_template ('squadSelection/squadSelectionHomePage.html')
+
+
+@squadSelection.route('/', methods=['GET', 'POST']) 
+@login_required 
+def DisplayActiveGames():  
     active_games_query = GameDetails.query.filter_by(game_status = 'Active')
     active_games_all=active_games_query.all()
     
@@ -28,13 +35,45 @@ def DisplayActiveGames():
     if form.validate_on_submit(): 
         selected_game_id=form.game_selection.data  
         session['selected_game_id']=selected_game_id
-        return redirect(url_for('squadSelection.selectBatters'))
+        return redirect(url_for('squadSelection.remindTheRules'))
 
     return render_template('squadSelection/displayActiveGames.html',form=form)
 
 
+@squadSelection.route('/remindTheRules', methods=['GET', 'POST'])  
+@login_required 
+def remindTheRules(): 
 
-@squadSelection.route('/selectBatters', methods=['GET', 'POST']) 
+    display_dict={ 
+    'points_per_run':1,  
+    'points_per_wicket':20, 
+    'points_per_catch':10  
+    }
+
+    match_id = session.get('selected_game_id')  
+
+    ## see how much time is left, or if it has expired already 
+    is_window_open, time_left = __getTimeLeftIndicator__(match_id)   
+
+    if (is_window_open == False): 
+        return render_template ('squadSelection/gameExpiredPage.html')  
+
+    else: 
+        game_object=GameDetails.query.filter_by(match_id=match_id).first()   
+
+        display_dict['points_per_run'] = game_object.points_per_run  
+        display_dict['points_per_wicket'] = game_object.points_per_wicket   
+
+        form= ContinueButton() 
+        if form.validate_on_submit():  
+            return redirect(url_for('squadSelection.selectBatters')) 
+        
+        return render_template ('squadSelection/remindTheRules.html',time_left=time_left,
+                                display_dict=display_dict, form=form)
+
+
+@squadSelection.route('/selectBatters', methods=['GET', 'POST'])  
+@login_required 
 def selectBatters():   
     instruction_header='Select at least 4 (and no more than 7) batsmen from the options below: '  
 
@@ -42,7 +81,7 @@ def selectBatters():
     selected_match_id = session.get('selected_game_id') 
 
     ## see how much time is left, or if it has expired already 
-    is_window_open, time_left = __getTimeLeftIndicator__(selected_match_id)   
+    is_window_open, time_left = __getTimeLeftIndicator__(selected_match_id)    
 
     if (is_window_open == False): 
         return render_template ('squadSelection/gameExpiredPage.html')
@@ -76,7 +115,8 @@ def selectBatters():
 
 
 
-@squadSelection.route('/selectBowlers', methods=['GET', 'POST']) 
+@squadSelection.route('/selectBowlers', methods=['GET', 'POST'])  
+@login_required 
 def selectBowlers():   
     instruction_header='Select at least 4 (and no more than 7) bowlers from the options below: ' 
  
@@ -123,7 +163,8 @@ def selectBowlers():
                             time_left=time_left, form=formForBowlers)   
 
 
-@squadSelection.route('/selectCapAndVc', methods=['GET', 'POST'])
+@squadSelection.route('/selectCapAndVc', methods=['GET', 'POST']) 
+@login_required 
 def selectCapAndVc():  
     match_id=session.get('selected_game_id')  
 
@@ -159,7 +200,8 @@ def selectCapAndVc():
         
 
 
-@squadSelection.route('/finalizeSquad', methods=['GET', 'POST'])
+@squadSelection.route('/finalizeSquad', methods=['GET', 'POST']) 
+@login_required 
 def finalizeSquad(): 
     ## get session data 
     full_squad=session.get('full_squad')   
@@ -185,7 +227,8 @@ def finalizeSquad():
                                         vice_captain=Cap_Vc_Dict['vice_captain'])
                 db.session.add(fantasy_squad) 
                 db.session.commit() 
-                flash('Congrats! Your squad has been submitted')
+                flash('Congrats! Your squad has been submitted') 
+                return redirect(url_for('main.index'))
             else: 
                 existing_record.selected_squad = str(full_squad)  
                 existing_record.captain=Cap_Vc_Dict['captain'] 
@@ -199,35 +242,46 @@ def finalizeSquad():
                             form=form)   
 
 
-@squadSelection.route('/editSquad', methods=['GET', 'POST'])
-def editSquad():  
-    match_id = session.get('selected_game_id') 
+@squadSelection.route('/viewMySquad_Part1', methods=['GET', 'POST'])  
+@login_required 
+def viewMySquad_Part1(): 
+    active_games_query = GameDetails.query.filter_by(game_status = 'Active')
+    active_games_all=active_games_query.all()
+    
+    active_games_list=[]
+    for each in active_games_all: 
+        active_games_list.append((each.match_id,each.game_title))
+    
+    form= ActiveGamesForm() 
+    form.game_selection.choices=active_games_list 
 
-    ## see how much time is left, or if it has expired already 
-    is_window_open, time_left = __getTimeLeftIndicator__(match_id)  
+    if form.validate_on_submit(): 
+        selected_game_id=form.game_selection.data  
+        return redirect(url_for('squadSelection.viewMySquad_Part2',match_id=selected_game_id))
 
-    if (is_window_open == False): 
-        return render_template ('squadSelection/gameExpiredPage.html')
-
-    else:
-        ## get the full squad from the query instead of the session, because this page should be independent of the session ### 
-        full_squad_string=SelectedSquad.query.filter_by(user_id=current_user.id, 
-                                                        match_id=match_id).first().selected_squad   
-        full_squad = literal_eval(full_squad_string) 
-        form = EditSquadForm() 
-        if form.validate_on_submit():  
-            return redirect(url_for('squadSelection.DisplayActiveGames'))
-
-        return render_template('squadSelection/EditSquadPage.html',time_left=time_left, 
-                            selections=full_squad,form=form)  
+    return render_template('squadSelection/displayActiveGames.html',form=form)  
 
 
-@squadSelection.route('/displayFinalSquad', methods=['GET', 'POST']) 
-def displayFinalSquad(): 
-    pass 
-##TODO
+@squadSelection.route('/viewMySquad_Part2', methods=['GET', 'POST'])  
+@login_required 
+def viewMySquad_Part2(): 
+    match_id=request.args['match_id']  
 
+    game_object=GameDetails.query.filter_by(match_id=match_id).first()   
+    squad_object=SelectedSquad.query.filter_by(match_id=match_id, 
+                                            user_id=current_user.id).first() 
 
+    if squad_object is not None:
+        display_dict={
+                    'full_squad': literal_eval(squad_object.selected_squad),
+                    'captain': squad_object.captain,
+                    'vice_captain': squad_object.vice_captain  
+                    }
+        return render_template('squadSelection/viewMySquad.html',display_dict=display_dict)   
+    else: 
+        return render_template('squadSelection/NoSquadFound.html')
+
+        
 
 def __getTimeLeftIndicator__(match_id):  
     ## get the match start time from database 

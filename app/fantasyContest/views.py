@@ -51,7 +51,7 @@ def displayContestRanking():
             user_name = form.user_selection.data   
             return redirect (url_for('fantasyContest.displayFullSquadSummary', match_id=match_id, user_name=user_name))
 
-        return render_template('fantasyContest/experimental.html', ranked_contestants=ranked_contestants, form=form)
+        return render_template('fantasyContest/displayContestRanking.html', ranked_contestants=ranked_contestants, form=form)
 
 
 @fantasyContest.route('/displayFullSquadSummary', methods=['GET', 'POST'])

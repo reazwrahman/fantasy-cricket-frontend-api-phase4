@@ -8,6 +8,12 @@ from ..models import GameDetails
 from .forms import GameSetupForm, ActiveGamesForm, AddScoreCardForm, DeactivateGameForm, UpdateGameDetailsForm
 
 
+@gameSetup.route('/displayNavigations', methods=['GET', 'POST']) 
+@admin_required
+@login_required 
+def displayNavigations(): 
+    return render_template ('gameSetup/gameSetupHomePage.html')
+
 @gameSetup.route('/', methods=['GET', 'POST']) 
 @admin_required
 @login_required 
