@@ -297,7 +297,7 @@ def __indicatePlayingXiInSquad__(squad_link,given_squad):
             playing=False
             for each_playing_member in playing_xi: 
                 if first_name in each_playing_member and last_name in each_playing_member: 
-                    paying=True
+                    playing=True
                     break     
             if (playing): 
                 modified_squad.append(each + '  (in playing-xi)')  
