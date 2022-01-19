@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 
 from . import gameSetup
 from .. import db
-from ..models import GameDetails
+from ..models import GameDetails, SelectedSquad
 from .forms import GameSetupForm, ActiveGamesForm, AddScoreCardForm, DeactivateGameForm, UpdateGameDetailsForm
 
 
@@ -98,8 +98,11 @@ def DeactivateGame():
     if form.validate_on_submit(): 
         selected_game_id = form.game_selection.data  
         game_object = GameDetails.query.filter_by(match_id = selected_game_id).first() 
+        squad_objects = SelectedSquad.query.filter_by(match_id  = selected_game_id).all()
 
-        db.session.delete(game_object)
+        db.session.delete(game_object) 
+        for each in squad_objects: 
+            db.session.delete(each)
         db.session.commit() 
         flash('Selected Game has been Deactivated')
 
