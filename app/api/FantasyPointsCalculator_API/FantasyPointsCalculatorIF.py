@@ -10,7 +10,7 @@ Created on Sun Jan  2 11:04:29 2022
 # python includes
 #import requests
 #from bs4 import BeautifulSoup
-import pandas as pd
+import pandas as pd 
 #import re
 #import numpy as np 
 
@@ -25,7 +25,7 @@ try: ## for outside of flask project usecases
     from FantasyPointsCalculator.FantasyBattingPointsGenerator import FantasyBattingPoints 
     from FantasyPointsCalculator.FantasyBowlingPointsGenerator import FantasyBowlingPoints
     from FantasyPointsCalculator.FantasyFieldingPointsGenerator import FantasyFieldingPoints
-
+    
 except ModuleNotFoundError: ## for inside of flask project environemnt 
     from .FantasyPointsCalculator.ScoreCardGenerator.BattingScoreCardGenerator import BattingScoreCard 
     from .FantasyPointsCalculator.ScoreCardGenerator.BowlingScoreCardGenerator import BowlingScoreCard 
@@ -198,10 +198,17 @@ class FantasyPointsForFullSquad(object):
         rows=[]
         for i in range(len(df)): 
             rows.append(list(df.loc[i]))
-        return rows 
+        return rows  
     
-
-              
+    @staticmethod 
+    def CheckScorecardLinkValidity(score_url): 
+        try:    
+            scorecard=BattingScoreCard(score_url) 
+            return True 
+        except: 
+            return False
+        
+                  
 def test():    
     #score_url='https://www.espncricinfo.com/series/india-in-south-africa-2021-22-1277060/south-africa-vs-india-1st-test-1277079/full-scorecard'
     score_url='https://www.espncricinfo.com/series/bangladesh-in-new-zealand-2021-22-1288977/new-zealand-vs-bangladesh-1st-test-1288979/full-scorecard'

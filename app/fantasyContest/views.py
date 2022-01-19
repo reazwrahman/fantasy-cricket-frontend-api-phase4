@@ -1,13 +1,15 @@
 from flask import render_template, redirect, request, url_for, flash, session
 from flask_login import current_user 
-from ast import literal_eval
+from ast import literal_eval 
+from datetime import datetime, timedelta
+from pytz import timezone 
 
 from . import fantasyContest
 from .. import db
 from ..models import GameDetails, SelectedSquad, User 
 from .forms import ActviveContestantsForm, ActiveGamesForm, ViewDetailsForm
 
-from .FantasyPointsCalculator_API.FantasyPointsCalculatorIF import FantasyPointsForFullSquad
+from ..api.FantasyPointsCalculator_API.FantasyPointsCalculatorIF import FantasyPointsForFullSquad
 
 
 @fantasyContest.route('/', methods=['GET', 'POST'])
@@ -23,7 +25,8 @@ def displayActiveGames():
     form.game_selection.choices=active_games_list 
 
     if form.validate_on_submit(): 
-        selected_game_id=form.game_selection.data  
+        selected_game_id=form.game_selection.data   
+        __updateScoreCardInDB__(selected_game_id) ## automatically update score card, if possible
         return redirect(url_for('fantasyContest.displayContestRanking', match_id=selected_game_id))
 
     return render_template('fantasyContest/displayActiveGames.html',form=form) 
@@ -37,7 +40,7 @@ def displayContestRanking():
     scorecard_link=game_object.scorecard_link 
 
     if scorecard_link == None or len(scorecard_link) < 5: ## just an arbitrary number to avoid empty string 
-        active_contestants = __getNamesofActiveContestants__(match_id)
+        active_contestants = __getNamesofActiveContestants__(match_id) 
         return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
     
     else:
@@ -247,4 +250,50 @@ def __getFantasyCalculatorObject__ (match_id, user_id):
     
     Fantasy_Calculator_Object=FantasyPointsForFullSquad(user_inputs_dict)  
 
-    return Fantasy_Calculator_Object
+    return Fantasy_Calculator_Object 
+
+
+def __convertSquadLinkToScorecardLink__(match_id):  
+    game_object=GameDetails.query.filter_by(match_id=match_id).first()  
+    squad_link=game_object.squad_link   
+
+    target_link='' 
+    #full-scorecard
+    url_split_list= squad_link.split('/') 
+    url_split_list[len(url_split_list)-1]='full-scorecard'  
+    
+    for each in url_split_list: 
+        target_link += each+'/' 
+    
+    return target_link
+
+
+def __checkIfGameIsAboutToStart__(match_id):  
+    ## get the match start time from database 
+    game_start_time_string = GameDetails.query.filter_by(match_id=match_id).first().game_start_time
+    game_start_time_list = literal_eval(game_start_time_string)   
+    game_start_time= datetime(game_start_time_list[0], game_start_time_list[1],  
+                              game_start_time_list[2],game_start_time_list[3], 
+                              game_start_time_list[4],0,tzinfo=timezone('EST'))  
+
+    est_time_now= datetime.now(timezone('EST')) 
+    minutes_delta=timedelta(minutes=28) 
+
+    if est_time_now > (game_start_time-minutes_delta): 
+        return True 
+    else: 
+        return False
+
+
+def __updateScoreCardInDB__(match_id): 
+    ## check if score card is available yet
+    game_object=GameDetails.query.filter_by(match_id=match_id).first()   
+    scorecard_link=game_object.scorecard_link 
+
+    if scorecard_link == None or len(scorecard_link) < 5: ## just an arbitrary number to avoid empty string 
+        if (__checkIfGameIsAboutToStart__(match_id)): 
+            score_url= __convertSquadLinkToScorecardLink__(match_id) 
+            if (FantasyPointsForFullSquad.CheckScorecardLinkValidity(score_url)): 
+                game_object.scorecard_link=score_url 
+                db.session.commit()
+    

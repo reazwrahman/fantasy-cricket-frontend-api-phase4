@@ -1,7 +1,8 @@
+from numpy import full
 from flask import render_template, redirect, request, url_for, flash, session
 from flask_login import current_user, login_required 
 from ast import literal_eval 
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone 
 
 from . import squadSelection
@@ -35,6 +36,7 @@ def DisplayActiveGames():
     if form.validate_on_submit(): 
         selected_game_id=form.game_selection.data  
         session['selected_game_id']=selected_game_id
+        __updatePlayingXiLinkInDB(selected_game_id) ## update to playing xi link, if possible
         return redirect(url_for('squadSelection.remindTheRules'))
 
     return render_template('squadSelection/displayActiveGames.html',form=form)
@@ -276,12 +278,31 @@ def viewMySquad_Part2():
                     'full_squad': literal_eval(squad_object.selected_squad),
                     'captain': squad_object.captain,
                     'vice_captain': squad_object.vice_captain  
-                    }
+                    } 
+        display_dict['full_squad'] = __indicatePlayingXiInSquad__(game_object.squad_link,display_dict['full_squad'])
         return render_template('squadSelection/viewMySquad.html',display_dict=display_dict)   
     else: 
         return render_template('squadSelection/NoSquadFound.html')
 
-        
+
+def __indicatePlayingXiInSquad__(squad_link,squad):
+    if 'match-playing-xi' in squad_link:   
+        modified_squad=[]
+        squad_generator = AllPlayers(squad_link) 
+        playing_xi = squad_generator.GetFullSquad()  
+
+        for each in squad: 
+            if each in playing_xi: 
+                modified_squad.append(each + '  (in playing-xi)') 
+            else: 
+                modified_squad.append(each + '  (!!! NOT in playing-xi !!!)')
+
+        return modified_squad
+    ## if match_playing_xi not out yet, just return what was receieved
+    else: 
+        return squad
+
+
 
 def __getTimeLeftIndicator__(match_id):  
     ## get the match start time from database 
@@ -301,10 +322,61 @@ def __getTimeLeftIndicator__(match_id):
     
 
 
- 
+def __checkIfGameIsAboutToStart__(match_id):  
+    ## get the match start time from database 
+    game_start_time_string = GameDetails.query.filter_by(match_id=match_id).first().game_start_time
+    game_start_time_list = literal_eval(game_start_time_string)   
+    game_start_time= datetime(game_start_time_list[0], game_start_time_list[1],  
+                              game_start_time_list[2],game_start_time_list[3], 
+                              game_start_time_list[4],0,tzinfo=timezone('EST'))  
+
+    est_time_now= datetime.now(timezone('EST')) 
+    minutes_delta=timedelta(minutes=28) 
+
+    if est_time_now > (game_start_time-minutes_delta): 
+        return True 
+    else: 
+        return False 
+
+def __convertSquadLinkToPlayingXiLink__(match_id):  
+    game_object=GameDetails.query.filter_by(match_id=match_id).first()  
+    squad_link=game_object.squad_link   
+
+    target_link='' 
+    #match-playing-xi
+    url_split_list= squad_link.split('/') 
+    url_split_list[len(url_split_list)-1]='match-playing-xi'  
+    
+    for each in url_split_list: 
+        target_link += each+'/' 
+    
+    return target_link
+
+
+def __checkPlayingXiLinkValidity__(playing_xi_link):  
+    ## link is valid, if we can generate full squad with 22 players in it, otherwise 
+    ## something is wrong 
+    squad_generator=AllPlayers(playing_xi_link)
+    try:  
+        full_squad=squad_generator.GetFullSquad()  
+        if len(full_squad) == 22: 
+            return True 
+        else: 
+            return False 
+    except: 
+        return False
 
 
 
+def __updatePlayingXiLinkInDB(match_id):
+    game_object = GameDetails.query.filter_by(match_id=match_id).first()   
+    squad_link = game_object.squad_link 
+
+    if 'match-playing-xi' not in squad_link: 
+        playing_xi_link = __convertSquadLinkToPlayingXiLink__(match_id)  
+        if (__checkPlayingXiLinkValidity__(playing_xi_link)): 
+            game_object.squad_link = playing_xi_link 
+            db.session.commit()
 
 
-
+     
