@@ -293,12 +293,16 @@ def __indicatePlayingXiInSquad__(squad_link,given_squad):
 
         for each in given_squad:  
             first_name = each.split(' ')[0] 
-            last_name = each.split(' ')[1] 
-            for each_playing_member in playing_xi:
+            last_name = each.split(' ')[1]  
+            playing=False
+            for each_playing_member in playing_xi: 
                 if first_name in each_playing_member and last_name in each_playing_member: 
-                    modified_squad.append(each + '  (in playing-xi)') 
-                else: 
-                    modified_squad.append(each + '  (!!! NOT in playing-xi !!!)')
+                    paying=True
+                    break     
+            if (playing): 
+                modified_squad.append(each + '  (in playing-xi)')  
+            else: 
+                modified_squad.append(each + '  (!!! NOT in playing-xi !!!)') 
 
         return modified_squad
     ## if match_playing_xi not out yet, just return what was receieved
