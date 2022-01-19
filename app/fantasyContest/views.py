@@ -277,9 +277,8 @@ def __checkIfGameIsAboutToStart__(match_id):
                               game_start_time_list[4],0,tzinfo=timezone('EST'))  
 
     est_time_now= datetime.now(timezone('EST')) 
-    minutes_delta=timedelta(minutes=28) 
 
-    if est_time_now > (game_start_time-minutes_delta): 
+    if est_time_now > game_start_time: 
         return True 
     else: 
         return False
