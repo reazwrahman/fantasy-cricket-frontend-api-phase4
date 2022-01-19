@@ -36,7 +36,7 @@ def DisplayActiveGames():
     if form.validate_on_submit(): 
         selected_game_id=form.game_selection.data  
         session['selected_game_id']=selected_game_id
-        __updatePlayingXiLinkInDB(selected_game_id) ## update to playing xi link, if possible
+        __updatePlayingXiLinkInDB__(selected_game_id) ## update to playing xi link, if possible
         return redirect(url_for('squadSelection.remindTheRules'))
 
     return render_template('squadSelection/displayActiveGames.html',form=form)
@@ -329,7 +329,20 @@ def __getTimeLeftIndicator__(match_id):
     
 
 
-def __checkIfGameIsAboutToStart__(match_id):  
+def __updatePlayingXiLinkInDB__(match_id): 
+    if (__checkIfGameIsAboutToStart__(match_id)): 
+        game_object = GameDetails.query.filter_by(match_id=match_id).first()   
+        squad_link = game_object.squad_link 
+
+        if 'match-playing-xi' not in squad_link:  
+            playing_xi_link = __convertSquadLinkToPlayingXiLink__(squad_link)  
+            if (__checkPlayingXiLinkValidity__(playing_xi_link)):  
+                game_object.squad_link = playing_xi_link 
+                db.session.commit()
+            
+
+
+def __checkIfGameIsAboutToStart__(match_id, toss_time=30):  
     ## get the match start time from database 
     game_start_time_string = GameDetails.query.filter_by(match_id=match_id).first().game_start_time
     game_start_time_list = literal_eval(game_start_time_string)   
@@ -338,17 +351,14 @@ def __checkIfGameIsAboutToStart__(match_id):
                               game_start_time_list[4],0,tzinfo=timezone('EST'))  
 
     est_time_now= datetime.now(timezone('EST')) 
-    minutes_delta=timedelta(minutes=28) 
+    minutes_delta=timedelta(minutes=toss_time) 
 
     if est_time_now > (game_start_time-minutes_delta): 
         return True 
     else: 
         return False 
 
-def __convertSquadLinkToPlayingXiLink__(match_id):  
-    game_object=GameDetails.query.filter_by(match_id=match_id).first()  
-    squad_link=game_object.squad_link   
-
+def __convertSquadLinkToPlayingXiLink__(squad_link):  
     target_link='' 
     #match-playing-xi
     url_split_list= squad_link.split('/') 
@@ -365,25 +375,15 @@ def __checkPlayingXiLinkValidity__(playing_xi_link):
     ## something is wrong 
     squad_generator=AllPlayers(playing_xi_link)
     try:  
-        full_squad=squad_generator.GetFullSquad()  
-        if len(full_squad) == 22: 
+        full_squad=squad_generator.GetFullSquad()   
+        if len(full_squad) ==22:  
             return True 
-        else: 
+        else:  
             return False 
-    except: 
+    except:  
         return False
 
 
-
-def __updatePlayingXiLinkInDB(match_id):
-    game_object = GameDetails.query.filter_by(match_id=match_id).first()   
-    squad_link = game_object.squad_link 
-
-    if 'match-playing-xi' not in squad_link: 
-        playing_xi_link = __convertSquadLinkToPlayingXiLink__(match_id)  
-        if (__checkPlayingXiLinkValidity__(playing_xi_link)): 
-            game_object.squad_link = playing_xi_link 
-            db.session.commit()
 
 
      
