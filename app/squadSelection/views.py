@@ -258,7 +258,8 @@ def viewMySquad_Part1():
     form.game_selection.choices=active_games_list 
 
     if form.validate_on_submit(): 
-        selected_game_id=form.game_selection.data  
+        selected_game_id=form.game_selection.data 
+        __updatePlayingXiLinkInDB__(selected_game_id)
         return redirect(url_for('squadSelection.viewMySquad_Part2',match_id=selected_game_id))
 
     return render_template('squadSelection/displayActiveGames.html',form=form)  
