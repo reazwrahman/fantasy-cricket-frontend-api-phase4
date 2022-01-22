@@ -26,14 +26,14 @@ def displayActiveGames():
 
     if form.validate_on_submit(): 
         selected_game_id=form.game_selection.data   
-        __updateScoreCardInDB__(selected_game_id) ## automatically update score card, if possible
         return redirect(url_for('fantasyContest.displayContestRanking', match_id=selected_game_id))
 
     return render_template('fantasyContest/displayActiveGames.html',form=form) 
 
 @fantasyContest.route('/displayContestRanking', methods=['GET', 'POST'])
 def displayContestRanking():   
-    match_id = request.args['match_id'] 
+    match_id = request.args['match_id']  
+    __updateScoreCardInDB__(match_id) ## automatically update score card, if possible
 
     ## check if score card is available yet
     game_object=GameDetails.query.filter_by(match_id=match_id).first()   
