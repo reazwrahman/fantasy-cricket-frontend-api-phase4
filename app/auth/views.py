@@ -5,7 +5,7 @@ from . import auth
 from .. import db
 from ..models import User
 from ..email import send_email
-from .forms import LoginForm, RegistrationForm, ChangePasswordForm,\
+from .forms import ChangeUsernameForm, LoginForm, RegistrationForm, ChangePasswordForm,\
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
 
 
@@ -102,7 +102,8 @@ def change_password():
             return redirect(url_for('main.index'))
         else:
             flash('Invalid password.')
-    return render_template("auth/change_password.html", form=form)
+    return render_template("auth/change_password.html", form=form) 
+
 
 
 @auth.route('/reset', methods=['GET', 'POST'])
@@ -146,7 +147,7 @@ def change_email_request():
         if current_user.verify_password(form.password.data):
             new_email = form.email.data.lower()
             token = current_user.generate_email_change_token(new_email)
-            send_email(new_email, 'Confirm your email address',
+            send_email(current_user.email, 'Confirm your email address',
                        'auth/email/change_email',
                        user=current_user, token=token)
             flash('An email with instructions to confirm your new email '
@@ -166,3 +167,19 @@ def change_email(token):
     else:
         flash('Invalid request.')
     return redirect(url_for('main.index'))
+
+
+@auth.route('/change_username', methods=['GET', 'POST'])
+@login_required
+def change_username():
+    form = ChangeUsernameForm()
+    if form.validate_on_submit():      
+        if current_user.verify_password(form.password.data): 
+            current_user.username = form.new_username.data
+            db.session.add(current_user)
+            db.session.commit()
+            flash('Your username has been updated')
+            return redirect(url_for('main.index'))
+        else:
+            flash('Invalid password.')
+    return render_template("auth/change_username.html", form=form)

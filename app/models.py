@@ -147,7 +147,7 @@ class User(UserMixin, db.Model):
         self.email = new_email
         self.avatar_hash = self.gravatar_hash()
         db.session.add(self)
-        return True
+        return True 
 
     def can(self, perm): 
         return self.role is not None and self.role.has_permission(perm)
