@@ -257,7 +257,10 @@ def __convertSquadLinkToScorecardLink__(match_id):
     game_object=GameDetails.query.filter_by(match_id=match_id).first()  
     squad_link=game_object.squad_link   
 
-    target_link='' 
+    target_link=''  
+    ## remove trailing slash if it's there
+    if squad_link[len(squad_link)-1]=='/': 
+        squad_link=squad_link[0:len(squad_link)-1] 
     #full-scorecard
     url_split_list= squad_link.split('/') 
     url_split_list[len(url_split_list)-1]='full-scorecard'  

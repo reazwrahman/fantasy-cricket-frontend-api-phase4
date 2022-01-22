@@ -360,7 +360,11 @@ def __checkIfGameIsAboutToStart__(match_id, toss_time=30):
         return False 
 
 def __convertSquadLinkToPlayingXiLink__(squad_link):  
-    target_link='' 
+    target_link=''  
+    
+    ## remove trailing slash if it's there
+    if squad_link[len(squad_link)-1]=='/': 
+        squad_link=squad_link[0:len(squad_link)-1] 
     #match-playing-xi
     url_split_list= squad_link.split('/') 
     url_split_list[len(url_split_list)-1]='match-playing-xi'  
