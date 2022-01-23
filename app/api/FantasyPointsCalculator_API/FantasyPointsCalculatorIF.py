@@ -203,8 +203,12 @@ class FantasyPointsForFullSquad(object):
     @staticmethod 
     def CheckScorecardLinkValidity(score_url): 
         try:    
-            scorecard=BattingScoreCard(score_url) 
-            return True 
+            scorecard_generator=BattingScoreCard(score_url)  
+            batting_scorecard=scorecard_generator.GetBattingDf() 
+            if len(batting_scorecard)>0:
+                return True  
+            else: 
+                return False
         except: 
             return False
         
