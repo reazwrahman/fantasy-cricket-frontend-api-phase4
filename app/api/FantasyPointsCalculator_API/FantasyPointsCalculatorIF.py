@@ -14,6 +14,7 @@ import pandas as pd
 #import re
 #import numpy as np 
 
+SQUAD_SUMMARY_KEYS=['Batting','Bowling','Fielding','Cap_Vc','Total']
 
 
 ## Project Includes 
@@ -122,7 +123,7 @@ class FantasyPointsForFullSquad(object):
     
     
     def __AddZeroPointsPlayers__(self,final_dict):    
-        contribution_areas= list(final_dict[list(final_dict.keys())[0]].keys()) ## get all the keys of the first dictionary entry namely batting, bowling, fielding etc.
+        contribution_areas= SQUAD_SUMMARY_KEYS
         for each in self.parameters_dict['squad']: 
             if each not in final_dict:  
                 final_dict[each]={}
@@ -137,7 +138,7 @@ class FantasyPointsForFullSquad(object):
         fielding=self.fielding_object.__GenerateFantasyPointsDf__()   
         
         all_dfs=[batting,bowling,fielding]
-        df_keys=['Batting','Bowling','Fielding','Cap_Vc']
+        df_keys=SQUAD_SUMMARY_KEYS
         
         final_dict={} 
         
@@ -155,10 +156,10 @@ class FantasyPointsForFullSquad(object):
         
               
         for each in final_dict: 
-            final_dict[each]['Total']=sum([final_dict[each]['Batting'], 
-                                    final_dict[each]['Bowling'], 
-                                    final_dict[each]['Fielding'], 
-                                    final_dict[each]['Cap_Vc']])
+            final_dict[each][SQUAD_SUMMARY_KEYS[4]]=sum([final_dict[each][SQUAD_SUMMARY_KEYS[0]], 
+                                    final_dict[each][SQUAD_SUMMARY_KEYS[1]], 
+                                    final_dict[each][SQUAD_SUMMARY_KEYS[2]], 
+                                    final_dict[each][SQUAD_SUMMARY_KEYS[3]]])
                     
         
         ## add all the non contributing players as 0 points
@@ -215,10 +216,10 @@ class FantasyPointsForFullSquad(object):
                   
 def test():    
     #score_url='https://www.espncricinfo.com/series/india-in-south-africa-2021-22-1277060/south-africa-vs-india-1st-test-1277079/full-scorecard'
-    score_url='https://www.espncricinfo.com/series/bangladesh-in-new-zealand-2021-22-1288977/new-zealand-vs-bangladesh-1st-test-1288979/full-scorecard'
+    #score_url='https://www.espncricinfo.com/series/bangladesh-in-new-zealand-2021-22-1288977/new-zealand-vs-bangladesh-1st-test-1288979/full-scorecard'
     #score_url='https://www.espncricinfo.com/series/india-in-south-africa-2021-22-1277060/south-africa-vs-india-1st-test-1277079/full-scorecard'
     #score_url='https://www.espncricinfo.com/series/super-smash-2021-22-1289602/central-districts-vs-auckland-14th-match-1289618/full-scorecard'
-    
+    score_url='https://www.espncricinfo.com/series/legends-league-cricket-2021-22-1298090/world-giants-vs-asia-lions-5th-match-1298100/full-scorecard'
     
     ### make me a random squad so i can test ###  
     from FantasyPointsCalculator.SquadGenerator.ListOfAllPlayers import AllPlayers 
@@ -234,8 +235,10 @@ def test():
     #     if full_squad[random_index] not in random_squad:
     #         random_squad.append(full_squad[random_index])
             
-    
-    random_squad=['Devon Conway top-order batter', 'Henry Nicholls top-order batter', 'Ross Taylor middle-order batter', 'Mahmudul Hasan Joy top-order batter', 'Najmul Hossain Shanto top-order batter', 'Shadman Islam opening batter', 'Trent Boult bowler', 'Tim Southee bowler', 'Neil Wagner bowler', 'Shoriful Islam bowler', 'Mehidy Hasan Miraz allrounder']
+    from ast import literal_eval
+    #random_squad=['Devon Conway top-order batter', 'Henry Nicholls top-order batter', 'Ross Taylor middle-order batter', 'Mahmudul Hasan Joy top-order batter', 'Najmul Hossain Shanto top-order batter', 'Shadman Islam opening batter', 'Trent Boult bowler', 'Tim Southee bowler', 'Neil Wagner bowler', 'Shoriful Islam bowler', 'Mehidy Hasan Miraz allrounder']
+    random_squad='[\'Brad Haddin †wicketkeeper batter\', \'Kevin Pietersen top-order batter\', \'Jonathan Trott top-order batter\', "Kevin O\'Brien batting allrounder", \'Misbah-ul-Haq (c)middle-order batter\', \'Brett Lee bowler\', \'Imran Tahir bowler\', \'Shoaib Akhtar bowler\', \'Ajantha Mendis bowler\', \'Jonty Rhodes\', \'Mohammad Rafique allrounder\']'
+    random_squad=literal_eval(random_squad)
     
     user_inputs_dict={ 
       'score_card_url': score_url,  

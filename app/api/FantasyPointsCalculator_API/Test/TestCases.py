@@ -54,13 +54,13 @@ TestDict= {
               'squad_url':'https://www.espncricinfo.com/series/ireland-in-usa-and-west-indies-2021-22-1291182/west-indies-vs-ireland-3rd-odi-1277087/match-squads',
               'score_url':'https://www.espncricinfo.com/series/ireland-in-usa-and-west-indies-2021-22-1291182/west-indies-vs-ireland-3rd-odi-1277087/full-scorecard'
         
-            } 
+            }, 
     
-    # 'test9':{
-    #           'squad_url':'',
-    #           'score_url':''
+    'test9':{
+              'squad_url':'https://www.espncricinfo.com/series/legends-league-cricket-2021-22-1298090/world-giants-vs-asia-lions-5th-match-1298100/match-playing-xi',
+              'score_url':'https://www.espncricinfo.com/series/legends-league-cricket-2021-22-1298090/world-giants-vs-asia-lions-5th-match-1298100/full-scorecard'
         
-    #         }
+            }
     
     
     
