@@ -90,9 +90,14 @@ class AllPlayers(object):
         full_squad=self.GetFullSquad() 
         for each in full_squad: 
             if 'bat' in each: 
-                batters.append(each)  
+                batters.append(each)   
                 
-        
+        ## find the pure allrounders (like Ben Stokes) and put them into batters for now  
+        bowlers=self.GetAllBowlers() 
+        combined=batters+bowlers 
+        for each in full_squad: 
+            if each not in combined and len(each)>1: 
+                batters.append(each)                          
         return batters
     
     # includes bowling allrounders
@@ -101,14 +106,7 @@ class AllPlayers(object):
         full_squad=self.GetFullSquad() 
         for each in full_squad: 
             if 'bowl' in each: 
-                bowlers.append(each)  
-                
-        ## find the pure allrounders (like Ben Stokes) and put them into bowlers for now  
-        batters=self.GetAllBatters() 
-        combined=batters+bowlers 
-        for each in full_squad: 
-            if each not in combined and len(each)>1: 
-                bowlers.append(each)
+                bowlers.append(each)             
                 
         return bowlers
     
