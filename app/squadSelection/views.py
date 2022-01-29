@@ -153,7 +153,7 @@ def selectBowlers():
             if len(bowlerSelections)<4 or len(bowlerSelections)>7:  
                 flash('Invalid number of bowlers chosen, choose anywhere between 4 to 7 players')
             
-            if (len(batterSelections+bowlerSelections))>11: 
+            elif (len(batterSelections+bowlerSelections))>11: 
                 flash('You have chosen more than 11 players, Select at most 11 players in your squad')
             
             else:        
@@ -268,8 +268,8 @@ def viewMySquad_Part1():
 @login_required 
 def viewMySquad_Part2(): 
     match_id=request.args['match_id']  
-    __updatePlayingXiLinkInDB__(match_id) ## auto update to playing xi, if possible
-    
+    __updatePlayingXiLinkInDB__(match_id) ## auto update to playing xi link, if possible
+
     game_object=GameDetails.query.filter_by(match_id=match_id).first()   
     squad_object=SelectedSquad.query.filter_by(match_id=match_id, 
                                             user_id=current_user.id).first() 
