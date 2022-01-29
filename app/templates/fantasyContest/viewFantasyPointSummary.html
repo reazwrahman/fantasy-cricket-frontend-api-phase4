@@ -1,7 +1,8 @@
 {% extends "base.html" %} 
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block content %} 
+{% block content %}  
+  <h3> {{df_display['game_title']}} </h3>
   <h3> Full Squad Summary: {{ df_display['user_name'] }} </h3>
   <table id="data" class="table table-striped">
     <thead>
