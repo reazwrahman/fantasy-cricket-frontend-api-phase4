@@ -1,1 +1,1 @@
-web: gunicorn fantasy_squad:app
+web: gunicorn application:app
