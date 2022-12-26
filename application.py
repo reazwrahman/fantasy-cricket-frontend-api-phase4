@@ -12,8 +12,8 @@ from flask_migrate import Migrate, upgrade
 from app import create_app, db
 from app.models import User, Role, GameDetails, SelectedSquad
 
-app = create_app(os.getenv('FLASK_CONFIG') or 'default')
-migrate = Migrate(app, db)
+app = create_app("development")
+migrate = Migrate(app, db) 
 
 
 @app.shell_context_processor
@@ -74,5 +74,5 @@ def deploy():
     Role.insert_roles()
 
 
-if __name__ == "__main__":  
-    app.run (debug=True)
+if __name__ == "__main__":   
+    app.run (debug=True) 

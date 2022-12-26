@@ -1,4 +1,5 @@
-import os
+import os 
+import decouple
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -28,8 +29,12 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
+    DEV_DATABASE_URL='mysql://rrahman3905:satisclose@fantasy-cricket-db.cujxiusautrg.us-east-2.rds.amazonaws.com/fantasy-cricket-db'
+    SQLALCHEMY_DATABASE_URI = DEV_DATABASE_URL #decouple.config('DEV_DATABASE_URL') 
+    #or \   'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite') 
+    print (f' dev database uri = {SQLALCHEMY_DATABASE_URI}') 
+    username = decouple.config('MAIL_USERNAME')
+    print (f'password = {username}')
 
 
 class TestingConfig(Config):
