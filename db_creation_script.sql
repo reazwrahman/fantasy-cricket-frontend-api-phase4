@@ -6,7 +6,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS gameDetails;
 CREATE TABLE gameDetails (
-	id INTEGER NOT NULL, 
+	id INTEGER NOT NULL AUTO_INCREMENT, 
 	game_title TEXT, 
 	match_id BIGINT, 
 	game_status TEXT, 
@@ -20,7 +20,7 @@ CREATE TABLE gameDetails (
 
 DROP TABLE IF EXISTS selectedSquad;
 CREATE TABLE selectedSquad (
-	id INTEGER NOT NULL, 
+	id INTEGER NOT NULL AUTO_INCREMENT, 
 	user_id INTEGER, 
 	match_id BIGINT, 
 	selected_squad TEXT, 
