@@ -13,7 +13,7 @@ class Config:
     MAIL_PASSWORD = decouple.config('MAIL_PASSWORD')
     FLASKY_MAIL_SUBJECT_PREFIX = '[CMCC Fantasy Squad Authentication]'
     FLASKY_MAIL_SENDER = 'Fantasy Squad Admin <fantasysquad30@gmail.com>'
-    FLASKY_ADMIN = 'fantasysquad30@gmail.com' #os.environ.get('FLASKY_ADMIN')
+    FLASKY_ADMIN = decouple.config('MAIL_USERNAME')
     SSL_REDIRECT = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True
