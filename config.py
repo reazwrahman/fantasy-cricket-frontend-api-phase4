@@ -9,8 +9,8 @@ class Config:
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in \
         ['true', 'on', '1']
-    MAIL_USERNAME = ""
-    MAIL_PASSWORD = ""
+    MAIL_USERNAME = decouple.config('MAIL_USERNAME')
+    MAIL_PASSWORD = decouple.config('MAIL_PASSWORD')
     FLASKY_MAIL_SUBJECT_PREFIX = '[CMCC Fantasy Squad Authentication]'
     FLASKY_MAIL_SENDER = 'Fantasy Squad Admin <fantasysquad30@gmail.com>'
     FLASKY_ADMIN = 'fantasysquad30@gmail.com' #os.environ.get('FLASKY_ADMIN')
@@ -29,12 +29,8 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    DEV_DATABASE_URL='mysql://rrahman3905:satisclose@fantasy-cricket-db.cujxiusautrg.us-east-2.rds.amazonaws.com/fantasy-cricket-db'
-    SQLALCHEMY_DATABASE_URI = DEV_DATABASE_URL #decouple.config('DEV_DATABASE_URL') 
-    #or \   'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite') 
-    print (f' dev database uri = {SQLALCHEMY_DATABASE_URI}') 
-    username = decouple.config('MAIL_USERNAME')
-    print (f'password = {username}')
+    SQLALCHEMY_DATABASE_URI = decouple.config('DEV_DATABASE_URL')
+    #or \   'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
 
 
 class TestingConfig(Config):
