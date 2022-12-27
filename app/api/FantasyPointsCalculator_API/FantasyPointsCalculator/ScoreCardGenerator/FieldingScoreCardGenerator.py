@@ -45,7 +45,7 @@ class FieldingScoreCard(object):
             
             for i, table in enumerate(table_body[0:len(table_body):2]):
                 rows = table.find_all('tr')
-                for row in rows[::2]:
+                for row in rows[::1]:
                     cols=row.find_all('td')
                     cols=[x.text.strip() for x in cols]
                     if cols[0] == 'Extras':

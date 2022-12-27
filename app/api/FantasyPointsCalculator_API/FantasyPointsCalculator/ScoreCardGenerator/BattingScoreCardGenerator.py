@@ -44,7 +44,7 @@ class BattingScoreCard(object):
             columns=["Name","Desc","Runs", "Balls", "4s", "6s", "SR", "Team"]
             for i, table in enumerate(table_body[0:len(table_body):2]):
                 rows = table.find_all('tr')
-                for row in rows[::2]:
+                for row in rows[::1]:
                     cols=row.find_all('td')
                     cols=[x.text.strip() for x in cols]
                     if cols[0] == 'Extras':
@@ -109,8 +109,7 @@ def test():
     #3 live test 
     #score_url='https://www.espncricinfo.com/series/india-in-south-africa-2021-22-1277060/south-africa-vs-india-3rd-test-1277081/full-scorecard'
     
-    #score_url='https://www.espncricinfo.com/series/bangladesh-in-new-zealand-2021-22-1288977/new-zealand-vs-bangladesh-1st-test-1288979/full-scorecard'
-
+    score_url='https://www.espncricinfo.com/series/south-africa-in-australia-2022-23-1317472/australia-vs-south-africa-2nd-test-1317493/full-scorecard'
     
     a=BattingScoreCard(score_url) 
     print (a.GetBattingDf()) 

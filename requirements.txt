@@ -28,7 +28,8 @@ lxml==4.7.1
 Mako==1.0.7
 Markdown==2.6.8
 MarkupSafe==2.0.1
-
+mysql==0.0.3
+mysqlclient==2.1.1
 numpy==1.21.6
 pandas==1.1.5
 PyMySQL==1.0.2
