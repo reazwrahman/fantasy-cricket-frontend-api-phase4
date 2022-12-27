@@ -65,9 +65,10 @@ class AllPlayers(object):
         self.raw_data=self.__PrepareRawData__()
         team1=[] 
         team2=[] 
-        for each in self.raw_data: 
-            team1.append(each[1]) 
-            team2.append(each[2])   
+        for each in self.raw_data:  
+            if len(each) == 3:
+                team1.append(each[1]) 
+                team2.append(each[2])   
         
         return team1,team2
         
