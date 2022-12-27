@@ -10,7 +10,7 @@ from .. import db
 from ..models import GameDetails, SelectedSquad
 from .forms import ActiveGamesForm, PlayerSelectionFormFactory, FinalizeSquadForm, ContinueButton, Cap_Vc_SelectionForm 
 
-from .ListOfAllPlayers import AllPlayers 
+from ..api.FantasyPointsCalculator_API.FantasyPointsCalculator.SquadGenerator.ListOfAllPlayers
 
 
 
