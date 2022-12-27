@@ -48,3 +48,8 @@ venv
 
 # env file 
 .env
+
+# DS_Store 
+.DS_Store
+app/.DS_Store 
+app/api/.DS_Store
