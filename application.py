@@ -12,7 +12,7 @@ from flask_migrate import Migrate, upgrade
 from app import create_app, db
 from app.models import User, Role, GameDetails, SelectedSquad
 
-app = create_app("development")
+app = create_app("aws")
 migrate = Migrate(app, db) 
 
 
