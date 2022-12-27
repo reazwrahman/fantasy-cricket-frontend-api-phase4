@@ -90,8 +90,7 @@ class HerokuConfig(ProductionConfig):
         app.logger.addHandler(file_handler) 
 
 class AwsConfig(ProductionConfig):
-    SSL_REDIRECT = True 
-
+    
     @classmethod
     def init_app(cls, app):
         ProductionConfig.init_app(app)

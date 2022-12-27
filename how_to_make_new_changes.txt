@@ -1,0 +1,10 @@
+to make new change:
+1) first make the change in aws_local_development branch
+test it locally
+push the new changes up in local
+
+2) make the same change in the aws_production_branch directory
+push the change up in the git repo
+
+make a new zip file from "inside the fantasy cricket directory"
+upload the new zip file manually in the aws console elastic beanstalk environment
