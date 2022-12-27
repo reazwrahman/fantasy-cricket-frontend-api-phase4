@@ -46,7 +46,7 @@ INSERT INTO roles VALUES (2,"Administrator",0,16);
  
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
-	id INTEGER NOT NULL, 
+	id INTEGER NOT NULL AUTO_INCREMENT, 
 	email VARCHAR(64), 
 	username VARCHAR(64), 
 	role_id INTEGER, 
