@@ -1,7 +1,8 @@
 alembic==0.9.3
 beautifulsoup4==4.11.1
 bleach==2.0.0
-blinker==1.4
+blinker==1.4 
+boto3==1.26.74
 bs4==0.0.1
 certifi==2022.12.7
 charset-normalizer==2.0.12
