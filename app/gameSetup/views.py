@@ -29,7 +29,7 @@ def SetupGame():
                     game_start_time=form.game_start_time.data) 
         
         ## add initial game info on database
-        dynamo_access.AddGameDetails(game_details)
+        dynamo_access.CreateNewGame(game_details)
         flash('Game details have been stored in  database')
         return redirect(url_for('gameSetup.AddScoreCard_Part1')) 
 
@@ -41,18 +41,15 @@ def SetupGame():
 @admin_required
 @login_required 
 def AddScoreCard_Part1(): 
-    active_games_query = GameDetails.query.filter_by(game_status = 'Active')
-    active_games_all=active_games_query.all()
-    
-    active_games_list=[]
-    for each in active_games_all: 
-        active_games_list.append((each.match_id,each.game_title))
+    active_games_list = dynamo_access.GetActiveGamesByIdAndTitle()
     
     form= ActiveGamesForm() 
     form.game_selection.choices=active_games_list 
 
     if form.validate_on_submit(): 
-        selected_game_id=form.game_selection.data  
+        selected_game_id=form.game_selection.data   
+
+        print (selected_game_id)
         session['selected_game_id']=selected_game_id
         return redirect(url_for('gameSetup.AddScoreCard_Part2'))
 
@@ -65,19 +62,24 @@ def AddScoreCard_Part1():
 @admin_required
 @login_required 
 def AddScoreCard_Part2(): 
-    match_id = session.get('selected_game_id') 
-    game_object = GameDetails.query.filter_by(match_id=match_id).first()
+    match_id = session.get('selected_game_id')  
+    game_title = dynamo_access.GetGameTitle(match_id)
 
     form =  AddScoreCardForm()  
     if form.validate_on_submit(): 
-        game_object.scorecard_link = form.score_card_link.data   
-        game_object.points_per_run = form.points_per_run.data 
-        game_object.points_per_wicket = form.points_per_wicket.data
-        db.session.commit()  
-        flash('Additional Game Details have been successfully updated in database')  
-        return redirect (url_for('gameSetup.displayNavigations'))
+        scorecard_details = {'scorecard_link': form.score_card_link.data, 
+                            'points_per_run': form.points_per_run.data, 
+                            'points_per_wicket': form.points_per_wicket.data
+                         }
+        update_successful = dynamo_access.AddScoreCardDetails(match_id, scorecard_details)
+     
+        if update_successful:
+            flash('Additional Game Details have been successfully updated in database')  
+            return redirect (url_for('gameSetup.displayNavigations')) 
+        else: 
+            flash('Something went wrong: couldnt add scorecard details to database')  
     
-    return render_template('gameSetup/addScoreCard.html', game_title=game_object.game_title, form=form) 
+    return render_template('gameSetup/addScoreCard.html', game_title=game_title, form=form) 
 
 
 
