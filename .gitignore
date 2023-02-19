@@ -56,3 +56,5 @@ app/api/.DS_Store
 
 # app zip 
 app.zip
+
+.DS_Store
