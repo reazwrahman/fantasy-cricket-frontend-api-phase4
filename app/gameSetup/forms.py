@@ -7,7 +7,7 @@ from ..models import GameDetails
 
 class GameSetupForm(FlaskForm):
     game_title = StringField('Game Title', validators=[DataRequired()])
-    match_id= IntegerField ('Unique Match ID', validators=[DataRequired()])
+    match_id= StringField ('Unique Match ID', validators=[DataRequired()])
     game_status=StringField('Active/Inactive', validators=[DataRequired()]) 
     squad_link=StringField('Enter the link for squad', validators=[DataRequired()])  
     game_start_time = StringField('Game Start Time in EST [year,month,day,hour,minute]') 

@@ -6,7 +6,9 @@ from . import gameSetup
 from .. import db
 from ..models import GameDetails, SelectedSquad
 from .forms import GameSetupForm, ActiveGamesForm, AddScoreCardForm, DeactivateGameForm, UpdateGameDetailsForm
+from ..DynamoAccess import DynamoAccess
 
+dynamo_access = DynamoAccess()
 
 @gameSetup.route('/displayNavigations', methods=['GET', 'POST']) 
 @admin_required
@@ -20,19 +22,17 @@ def displayNavigations():
 def SetupGame():
     form = GameSetupForm()
     if form.validate_on_submit():  
-        match_exists = GameDetails.query.filter_by(match_id=form.match_id.data).first() 
-        if match_exists is None:
-            game_details = GameDetails(game_title=form.game_title.data, 
-                        match_id=form.match_id.data,
-                        game_status=form.game_status.data,
-                        squad_link=form.squad_link.data, 
-                        game_start_time=form.game_start_time.data)
-            db.session.add(game_details)
-            db.session.commit()
-            flash('Game details have been stored in  database')
-            return redirect(url_for('gameSetup.AddScoreCard_Part1')) 
-        else: 
-            flash('Sorry, Database already Contains a record with this match id')
+        game_details = GameDetails(game_title=form.game_title.data, 
+                    match_id=form.match_id.data,
+                    game_status=form.game_status.data,
+                    squad_link=form.squad_link.data, 
+                    game_start_time=form.game_start_time.data) 
+        
+        ## add initial game info on database
+        dynamo_access.AddGameDetails(game_details)
+        flash('Game details have been stored in  database')
+        return redirect(url_for('gameSetup.AddScoreCard_Part1')) 
+
     return render_template('gameSetup/setupGame.html',form=form)
 
 

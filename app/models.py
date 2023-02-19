@@ -199,7 +199,7 @@ def load_user(user_id):
 ######## Database model to keep track of active game ############
 class GameDetails(db.Model):
     __tablename__ = 'gameDetails'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String, primary_key=True)
     game_title = db.Column(db.String) 
     match_id=db.Column(db.BigInteger,unique=True,index=True)
     game_status=db.Column(db.String) 
