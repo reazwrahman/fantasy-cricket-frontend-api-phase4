@@ -56,8 +56,6 @@ def AddScoreCard_Part1():
     return render_template('gameSetup/displayActiveGames.html',form=form)
 
 
-
-
 @gameSetup.route('/AddScoreCard_Part2', methods=['GET', 'POST']) 
 @admin_required
 @login_required 
@@ -87,26 +85,18 @@ def AddScoreCard_Part2():
 @admin_required
 @login_required 
 def DeactivateGame(): 
-    active_games_query = GameDetails.query.filter_by(game_status = 'Active')
-    active_games_all=active_games_query.all()
-    
-    active_games_list=[]
-    for each in active_games_all: 
-        active_games_list.append((each.match_id,each.game_title))
+    active_games_list = dynamo_access.GetActiveGamesByIdAndTitle()
     
     form= DeactivateGameForm() 
     form.game_selection.choices=active_games_list 
 
     if form.validate_on_submit(): 
         selected_game_id = form.game_selection.data  
-        game_object = GameDetails.query.filter_by(match_id = selected_game_id).first() 
-        squad_objects = SelectedSquad.query.filter_by(match_id  = selected_game_id).all()
-
-        db.session.delete(game_object) 
-        for each in squad_objects: 
-            db.session.delete(each)
-        db.session.commit() 
-        flash('Selected Game has been Deactivated')
+        deletion_succesful = dynamo_access.DeleteGame(selected_game_id) 
+        if deletion_succesful: 
+            flash('Selected Game has been Deactivated') 
+        else: 
+            flash('ERROR Something went wrong with the database while trying to delete')
 
     return render_template('gameSetup/displayActiveGames.html',form=form) 
 
@@ -116,30 +106,22 @@ def DeactivateGame():
 @admin_required
 @login_required 
 def UpdateGameDetails(): 
-    active_games_query = GameDetails.query.filter_by(game_status = 'Active')
-    active_games_all=active_games_query.all()
-    
-    active_games_list=[]
-    for each in active_games_all: 
-        active_games_list.append((each.match_id,each.game_title))
+    active_games_list = dynamo_access.GetActiveGamesByIdAndTitle()
     
     form= UpdateGameDetailsForm() 
     form.game_selection.choices=active_games_list 
 
     if form.validate_on_submit(): 
-        selected_game_id = form.game_selection.data  
-        game_object = GameDetails.query.filter_by(match_id = selected_game_id).first()  
+        selected_game_id = form.game_selection.data    
         squad_link=form.updated_squad_link.data 
         game_start_time=form.game_start_time.data
 
         if len(squad_link) > 5:  ## just an arbitrary value to make sure it's not an empty string
-            game_object.squad_link=squad_link
-            db.session.commit()  
+            dynamo_access.UpdateSquadLink(selected_game_id, squad_link) 
             flash ('Link for Potential Squad has been Updated') 
 
         if len(game_start_time) > 5:   ## just an arbitrary value to make sure it's not an empty string
-            game_object.game_start_time=game_start_time
-            db.session.commit()  
+            dynamo_access.UpdateSquadLink(selected_game_id, game_start_time)  
             flash ('Game Start Time Updated')
 
     return render_template('gameSetup/updateGameDetails.html',form=form)

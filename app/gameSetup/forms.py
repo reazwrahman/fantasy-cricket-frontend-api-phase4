@@ -24,7 +24,7 @@ class ActiveGamesForm(FlaskForm):
 ############# FORM TO DISPLAY ACTIVE GAMES IN THE DATABASE AND COLLECT USER INPUT
 class DeactivateGameForm(FlaskForm): 
     
-    game_selection = SelectField(u'Select a game: ', coerce=int)
+    game_selection = SelectField(u'Select a game: ', coerce=str)
     submit = SubmitField('Deactivate')  
 
 ######## ------------------------------------------------------#### 
@@ -37,7 +37,7 @@ class AddScoreCardForm(FlaskForm):
 
 ######## ------------------------------------------------------####  
 class UpdateGameDetailsForm(FlaskForm): 
-    game_selection = SelectField(u'Select a game: ', coerce=int) 
+    game_selection = SelectField(u'Select a game: ', coerce=str) 
     game_start_time = StringField('Game Start Time in EST [year,month,day,hour,minute]') 
     updated_squad_link = StringField('Enter the updated link for squad/Playing Xi') 
     
