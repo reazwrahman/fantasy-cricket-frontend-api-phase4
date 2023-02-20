@@ -124,7 +124,19 @@ class DynamoAccess(object):
         if len(json_list) < 1: 
             return None
         else:  
-            return json_list[0]['summary_points']
+            return json_list[0]['summary_points'] 
+    
+    def GetMatchBreakdownPoints(self, match_id, which_department:str): 
+        response = self.match_table.query( 
+                KeyConditionExpression=Key('match_id').eq(match_id),  
+                ProjectionExpression = which_department)   
+        
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+
+        if len(json_list) < 1: 
+            return None
+        else:  
+            return json_list[0][which_department] 
 
 
     ''' ------------------------------------ SETUPGAME ------------------------------------ '''
