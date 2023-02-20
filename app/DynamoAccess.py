@@ -77,19 +77,6 @@ class DynamoAccess(object):
             return json_list[0]['match_squad'] 
     
 
-    def CheckIfUserHasSquad(self, match_id, user_id):  
-        response = self.squad_table.query( 
-                KeyConditionExpression=Key('match_id#user_id').eq(match_id+'#'+str(user_id)),  
-                ProjectionExpression = 'squad_selection')   
-        
-        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
-
-        if len(json_list) < 1: 
-            return False
-        else:  
-            return True 
-    
-
     def GetUserSelectedSquad(self, match_id, user_id): 
         response = self.squad_table.query( 
                 KeyConditionExpression=Key('match_id#user_id').eq(match_id+'#'+str(user_id)),  
@@ -98,8 +85,46 @@ class DynamoAccess(object):
         json_list = json.loads(json.dumps(response["Items"], use_decimal=True))  
         if len(json_list) < 1: 
             return None
-        return json_list[0]['squad_selection']
+        return json_list[0]['squad_selection'] 
+    
+
+    def GetFantasyRanking(self, match_id): 
+        response = self.match_table.query( 
+                KeyConditionExpression=Key('match_id').eq(match_id),  
+                ProjectionExpression = 'fantasy_ranks')   
         
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+
+        if len(json_list) < 1: 
+            return None
+        else:  
+            return json_list[0]['fantasy_ranks'] 
+
+
+    def GetActiveContestantsByUserNames(self, match_id): 
+        active_contestants = []  
+        response = self.squad_table.scan(
+                    FilterExpression=Attr("match_id").eq(match_id)
+                    ) 
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True)) 
+        for i in range(len(json_list)): 
+            squad_selection = json_list[i]['squad_selection']
+            user_name = json_list[i]['user_name']  
+            active_contestants.append(user_name) 
+        
+        return active_contestants
+
+    def GetMatchSummaryPoints(self, match_id): 
+        response = self.match_table.query( 
+                KeyConditionExpression=Key('match_id').eq(match_id),  
+                ProjectionExpression = 'summary_points')   
+        
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+
+        if len(json_list) < 1: 
+            return None
+        else:  
+            return json_list[0]['summary_points']
 
 
     ''' ------------------------------------ SETUPGAME ------------------------------------ '''

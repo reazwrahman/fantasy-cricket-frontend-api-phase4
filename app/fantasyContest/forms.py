@@ -6,7 +6,7 @@ from wtforms import ValidationError
 
 class ActviveContestantsForm(FlaskForm): 
     
-    user_selection = SelectField(u'View the Squad of: ')
+    user_selection = SelectField(u'View the Squad And Fantasy Point Distribution of: ')
     submit = SubmitField('Next')  
 
 ######## ------------------------------------------------------####
@@ -14,7 +14,7 @@ class ActviveContestantsForm(FlaskForm):
 ############# FORM TO DISPLAY ACTIVE GAMES IN THE DATABASE AND COLLECT USER INPUT
 class ActiveGamesForm(FlaskForm): 
     
-    game_selection = SelectField(u'Select a game: ', coerce=int)
+    game_selection = SelectField(u'Select a game: ', coerce=str)
     submit = SubmitField('Next')  
 
 ######## ------------------------------------------------------####  
