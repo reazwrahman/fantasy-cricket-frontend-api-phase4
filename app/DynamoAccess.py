@@ -209,7 +209,30 @@ class DynamoAccess(object):
             ) 
             return True 
         except: 
-            return False 
+            return False  
+    
+    def DeleteSquads(self, match_id): 
+        response = self.squad_table.scan(
+                    FilterExpression=Attr("match_id").eq(match_id)
+                    ) 
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+        
+        deletion_successful = True
+
+        for i in range(len(json_list)): 
+            partition_key = json_list[i]['match_id#user_id']  
+            try:
+                response = self.squad_table.delete_item(Key={'match_id#user_id': partition_key})  
+            except: 
+                deletion_successful = False 
+        
+        return deletion_successful
+
+        
+ 
+
+
+
     
     def AddMatchSquad(self, match_id, squad_object): 
         update_expression=  "set match_squad=:match_squad"   

@@ -104,7 +104,7 @@ def DeactivateGame():
 
     if form.validate_on_submit(): 
         selected_game_id = form.game_selection.data  
-        deletion_succesful = dynamo_access.DeleteGame(selected_game_id) 
+        deletion_succesful = dynamo_access.DeleteGame(selected_game_id) and dynamo_access.DeleteSquads(selected_game_id)
         if deletion_succesful: 
             flash('Selected Game has been Deactivated') 
         else: 
