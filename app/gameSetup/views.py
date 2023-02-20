@@ -6,7 +6,8 @@ from . import gameSetup
 from .. import db
 from ..models import GameDetails, SelectedSquad
 from .forms import GameSetupForm, ActiveGamesForm, AddScoreCardForm, DeactivateGameForm, UpdateGameDetailsForm
-from ..DynamoAccess import DynamoAccess
+from ..DynamoAccess import DynamoAccess 
+from app.api.SquadGenerator.ListOfAllPlayers import AllPlayers
 
 dynamo_access = DynamoAccess()
 
@@ -29,8 +30,18 @@ def SetupGame():
                     game_start_time=form.game_start_time.data) 
         
         ## add initial game info on database
-        dynamo_access.CreateNewGame(game_details)
-        flash('Game details have been stored in  database')
+        game_created = dynamo_access.CreateNewGame(game_details)
+        
+        ## add match squad to database 
+        squad_generator = AllPlayers(game_details.squad_link)
+        full_squad = squad_generator.GetFullSquad() 
+        squad_created = dynamo_access.AddMatchSquad(game_details.match_id, full_squad) 
+
+        if game_created and squad_created:  
+            flash('Game details have been stored in  database') 
+        else: 
+            flash('ERROR Something went wrong while creating game or creating match squad') 
+
         return redirect(url_for('gameSetup.AddScoreCard_Part1')) 
 
     return render_template('gameSetup/setupGame.html',form=form)
@@ -117,7 +128,12 @@ def UpdateGameDetails():
         game_start_time=form.game_start_time.data
 
         if len(squad_link) > 5:  ## just an arbitrary value to make sure it's not an empty string
-            dynamo_access.UpdateSquadLink(selected_game_id, squad_link) 
+            dynamo_access.UpdateSquadLink(selected_game_id, squad_link)  
+            
+            ## add match squad to database 
+            squad_generator = AllPlayers(squad_link)
+            full_squad = squad_generator.GetFullSquad() 
+            squad_created = dynamo_access.AddMatchSquad(selected_game_id, full_squad)
             flash ('Link for Potential Squad has been Updated') 
 
         if len(game_start_time) > 5:   ## just an arbitrary value to make sure it's not an empty string
