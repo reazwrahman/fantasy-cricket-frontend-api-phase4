@@ -12,7 +12,7 @@ from .forms import ActiveGamesForm, PlayerSelectionFormFactory, FinalizeSquadFor
 
 
 from ..DynamoAccess import DynamoAccess 
-from app.api.SquadGenerator.ListOfAllPlayers import AllPlayers
+from app.api.SquadGenerator.SquadOperators import SquadOperators
 
 dynamo_access = DynamoAccess() 
 
@@ -82,20 +82,24 @@ def selectBatters():
     else: 
         ## get the list of all batters  
         match_squad = dynamo_access.GetMatchSquad(selected_match_id) 
-        squad_object=AllPlayers(url = None, full_squad_dict = match_squad)
-        batters_dict= squad_object.GetAllBatters() 
-        batter_names = squad_object.GetPlayerNamesFromDict(batters_dict) 
-        reversed_dict = squad_object.GetReversedDict(batters_dict)
+        squad_operator = SquadOperators(match_squad) 
+
+        batters_dict= squad_operator.GetAllBatters() 
+        batter_names = squad_operator.GetPlayerNamesFromDict(batters_dict) 
+        reversed_dict = squad_operator.GetReversedDict(batters_dict)
+
+        batter_names_with_playing_xi_tag = squad_operator.AttachPlayingXiTagToNames(batter_names, match_squad) 
 
         ## create a form with possible batters choices
-        formForBatters = PlayerSelectionFormFactory.BuildSimpleForm(batter_names)  
+        formForBatters = PlayerSelectionFormFactory.BuildSimpleForm(batter_names_with_playing_xi_tag)  
 
         ## collect user's selection for batsmen
         batterSelections=[] 
         if formForBatters.validate_on_submit(): 
             for eachBatter in (batter_names):
-                if (getattr(formForBatters, eachBatter).data):   
-                    batterSelections.append(reversed_dict[eachBatter])
+                if (getattr(formForBatters, eachBatter).data): 
+                    batter_name_without_playing_xi_tag = squad_operator.RemovePlayingXiTagFromName(eachBatter)  
+                    batterSelections.append(reversed_dict[batter_name_without_playing_xi_tag])
             
             ## check if at least 4 batsmen have been chosen, if not reload the page with an error header  
             if len(batterSelections) < 3 or len(batterSelections) > 7:  
@@ -130,20 +134,24 @@ def selectBowlers():
     else:
 
         ## get all the available non-batters ##
-        squad_object=AllPlayers(url = None, full_squad_dict = match_squad) 
-        batters_dict= squad_object.GetAllBatters()
-        non_batters_dict= squad_object.GetNonOverlappingPlayers(batters_dict) 
-        player_names = squad_object.GetPlayerNamesFromDict(non_batters_dict) 
-        reversed_dict = squad_object.GetReversedDict(non_batters_dict)
+        squad_operator = SquadOperators(match_squad)
 
-        formForBowlers = PlayerSelectionFormFactory.BuildSimpleForm(player_names)  
+        batters_dict= squad_operator.GetAllBatters()
+        non_batters_dict= squad_operator.GetNonOverlappingPlayers(batters_dict) 
+        player_names = squad_operator.GetPlayerNamesFromDict(non_batters_dict)  
+        reversed_dict = squad_operator.GetReversedDict(non_batters_dict) 
+
+        player_names_with_playing_xi_tag = squad_operator.AttachPlayingXiTagToNames(player_names, match_squad)
+
+        formForBowlers = PlayerSelectionFormFactory.BuildSimpleForm(player_names_with_playing_xi_tag)  
         
         ## collect user's selection for bowlers
         bowlerSelections=[] 
         if formForBowlers.validate_on_submit(): 
             for eachbowler in (player_names):
-                if (getattr(formForBowlers, eachbowler).data): 
-                    bowlerSelections.append(reversed_dict[eachbowler])  
+                if (getattr(formForBowlers, eachbowler).data):  
+                    player_name = squad_operator.RemovePlayingXiTagFromName(eachbowler)
+                    bowlerSelections.append(reversed_dict[player_name])  
             
             ## check if at least 3 bowlers have been chosen, if not reload the page with an error header  
             if len(bowlerSelections) < 3 or len(bowlerSelections) > 7:  
@@ -211,8 +219,11 @@ def finalizeSquad():
     Cap_Vc_Dict=session.get('Cap_Vc_Dict')  
     match_id=session.get('selected_game_id')  
     match_squad=session.get('match_squad') 
-    squad_object=AllPlayers(url = None, full_squad_dict = match_squad) 
-    full_squad_names = squad_object.GetNamesListFromIds(full_squad, match_squad) 
+    squad_operator = SquadOperators(match_squad)
+
+    full_squad_names = squad_operator.GetNamesListFromIds(full_squad, match_squad) 
+    full_squad_names = squad_operator.AttachPlayingXiTagToNames(full_squad_names, match_squad)
+
     cap_vc_dict_names={'captain':match_squad[Cap_Vc_Dict['captain']]['Name'], 
                        'vice_captain': match_squad[Cap_Vc_Dict['vice_captain']]['Name']}
 
@@ -229,7 +240,7 @@ def finalizeSquad():
                                 'captain': Cap_Vc_Dict['captain'], 
                                 'vice_captain': Cap_Vc_Dict['vice_captain'] 
                               } 
-            dynamo_access.AddSelectedSquad(match_id, current_user.id, fantasy_squad)    
+            dynamo_access.AddSelectedSquad(match_id, current_user.id, 'username'+str(current_user.id), fantasy_squad)    
 
             flash('Congrats! Your squad has been submitted') 
             return redirect(url_for('main.index'))
@@ -259,7 +270,8 @@ def viewMySquad_Part1():
 @login_required 
 def viewMySquad_Part2(): 
     match_id=request.args['match_id']  
-    squad_selection = dynamo_access.GetUserSelectedSquad(match_id, current_user.id) 
+    squad_selection = dynamo_access.GetUserSelectedSquad(match_id, current_user.id)  
+    match_squad = dynamo_access.GetMatchSquad(match_id)
     
     if squad_selection is not None: 
         selected_squad = squad_selection['selected_squad'] 
@@ -267,8 +279,10 @@ def viewMySquad_Part2():
         vice_captain = squad_selection['vice_captain']
         ## get playername from id 
         match_squad = dynamo_access.GetMatchSquad(match_id)
-        squad_generator = AllPlayers(url=None, full_squad_dict=match_squad)
-        selected_squad_names = squad_generator.GetNamesListFromIds(selected_squad, match_squad) 
+        squad_operator = SquadOperators(match_squad)
+
+        selected_squad_names = squad_operator.GetNamesListFromIds(selected_squad, match_squad)  
+        selected_squad_names = squad_operator.AttachPlayingXiTagToNames(selected_squad_names, match_squad)
         captain_name = match_squad[captain]['Name'] 
         vc_name = match_squad[vice_captain]['Name']
         squad_by_names = selected_squad_names

@@ -7,7 +7,8 @@ from .. import db
 from ..models import GameDetails, SelectedSquad
 from .forms import GameSetupForm, ActiveGamesForm, AddScoreCardForm, DeactivateGameForm, UpdateGameDetailsForm
 from ..DynamoAccess import DynamoAccess 
-from app.api.SquadGenerator.ListOfAllPlayers import AllPlayers
+from app.api.SquadGenerator.ListOfAllPlayers import AllPlayers 
+from app.api.SquadGenerator.SquadOperators import SquadOperators
 
 dynamo_access = DynamoAccess()
 
@@ -127,14 +128,26 @@ def UpdateGameDetails():
         squad_link=form.updated_squad_link.data 
         game_start_time=form.game_start_time.data
 
-        if len(squad_link) > 5:  ## just an arbitrary value to make sure it's not an empty string
-            dynamo_access.UpdateSquadLink(selected_game_id, squad_link)  
-            
-            ## add match squad to database 
-            squad_generator = AllPlayers(squad_link)
-            full_squad = squad_generator.GetFullSquad() 
-            squad_created = dynamo_access.AddMatchSquad(selected_game_id, full_squad)
-            flash ('Link for Potential Squad has been Updated') 
+        if len(squad_link) > 5:  ## just an arbitrary value to make sure it's not an empty string 
+            dynamo_access.UpdateSquadLink(selected_game_id, squad_link) 
+            squad_object = AllPlayers(squad_link) 
+
+            if 'playing-xi' in squad_link: 
+                playing_xi_squad = squad_object.GetFullSquad()  
+                match_squad = dynamo_access.GetMatchSquad(selected_game_id) 
+                squad_operator = SquadOperators(match_squad)
+                updated_match_squad = squad_operator.AddPlayingXiIndicator(playing_xi_squad)
+                
+                ## update match squad to database 
+                squad_created = dynamo_access.AddMatchSquad(selected_game_id, updated_match_squad) 
+                if squad_created: flash ('Match Squad Has Been Updated With Playing XI Status') 
+            else: 
+                ## update whole match squad  
+                match_squad = squad_object.GetFullSquad()  
+                squad_created = dynamo_access.AddMatchSquad(selected_game_id, match_squad)  
+                if squad_created: flash ('Match Squad Has Been Updated With the New Link') 
+                
+
 
         if len(game_start_time) > 5:   ## just an arbitrary value to make sure it's not an empty string
             dynamo_access.UpdateSquadLink(selected_game_id, game_start_time)  

@@ -19,18 +19,12 @@ class AllPlayers(object):
         or we can just create the full squad dict for the first time 
         by not passing in the optional parameter BUT by passing in the url
     '''
-    def __init__(self,url=None, full_squad_dict = None):     
-        if full_squad_dict:   
-             self.full_squad_dict = full_squad_dict 
-        elif url:   
-            self.raw_data=[] 
-            self.URL=url 
-            self.team1Squad,self.team2Squad=self.__PrepareTeams__() 
-            self.full_squad_dict = self.MakeFullSquadDict()  
-        else: 
-            raise ValueError('AllPlayers constructor needs either match squad or a squad link, invalid parameters provided')
+    def __init__(self,url):              
+        self.raw_data=[] 
+        self.URL=url 
+        self.team1Squad,self.team2Squad=self.__PrepareTeams__() 
+        self.full_squad_dict = self.MakeFullSquadDict()  
 
-        
     
     @staticmethod 
     def ValidateLink(URL): 
@@ -108,6 +102,7 @@ class AllPlayers(object):
             self.full_squad_dict[i+1] = {}
             self.full_squad_dict[i+1]['Name'] = full_squad_list[i] 
             self.full_squad_dict[i+1]['Role'] = []
+            self.full_squad_dict[i+1]['InPlayingXi'] = False
 
         self.__AddPlayerRoles__()
         return self.full_squad_dict    
@@ -135,83 +130,7 @@ class AllPlayers(object):
 
     def GetFullSquad(self):  
         return self.full_squad_dict 
-    
- 
-    def UpdateSquadKeys(self, old_squad, new_squad):  
-        ''' 
-        context: with the playing xi link, we will get new keys for each player 
-        if someone submits a squad before playing xi link, the keys will point to wrong players 
-        therefore, we need to retain the old keys into the new squad
-    '''  
-        # get the max key value from the old_squad 
-        max_key = 0 
-        for each in old_squad: 
-            if each >= max_key: 
-                max_key = each  
-        
-        updated_dict = {} 
-        for each in new_squad: 
             
-
-        
-    
-
-
-    
-    # includes batting allrounders
-    def GetAllBatters(self): 
-        return self.__filterByRole__('batter')
-    
-    # includes bowling allrounders
-    def GetAllBowlers(self): 
-        return self.__filterByRole__('bowler') 
-                
-    
-    def GetAllAllRounders(self): 
-        return self.__filterByRole__('allrounder')  
-
-    def GetAllWicketKeepers(self): 
-        return self.__filterByRole__('wicketkeeper') 
-
-    def __filterByRole__(self, role:str): 
-        filtered_dict = {} 
-        for each in self.full_squad_dict: 
-            all_roles = self.full_squad_dict[each]['Role'] 
-            if role in all_roles: 
-                filtered_dict[each] = self.full_squad_dict[each] 
-        
-        return filtered_dict
-
-    def GetNonOverlappingPlayers(self, primary_dict): 
-        secondary_dict = {} 
-        for each in self.full_squad_dict: 
-            if each not in primary_dict : 
-                secondary_dict[each] = self.full_squad_dict[each] 
-        
-        return secondary_dict 
-
-    def GetPlayerNamesFromDict(self, player_dict): 
-        names = [] 
-        for each in player_dict: 
-            names.append(player_dict[each]['Name']) 
-        
-        return names 
-    
-    ## key = playername, value = playerid
-    def GetReversedDict(self, player_dict): 
-        reversed_dict = {} 
-        for each in player_dict: 
-            player_id = each 
-            player_name = player_dict[each]['Name'] 
-            reversed_dict[player_name] = player_id
-
-        return reversed_dict     
-    
-    def GetNamesListFromIds(self, player_id:List, match_squad_dict:Dict): 
-        names = []  
-        for each in player_id: 
-            names.append(match_squad_dict[each]['Name']) 
-        return names
 
         
 def test():
@@ -225,8 +144,7 @@ def test():
     #print ('---------------')
     #print(a.GetAllAllRounders())  
     #print ('---------------') 
-    #print(a.GetAllWicketKeepers())  
-    print (a.GetNonOverlappingPlayers(a.GetAllBatters()))
+    #print(a.GetAllWicketKeepers())
 
 if __name__=="__main__": 
     test()
