@@ -93,12 +93,11 @@ class DynamoAccess(object):
                 KeyConditionExpression=Key('match_id').eq(match_id),  
                 ProjectionExpression = 'fantasy_ranks')   
         
-        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
-
-        if len(json_list) < 1: 
-            return None
-        else:  
-            return json_list[0]['fantasy_ranks'] 
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))  
+        if 'fantasy_ranks' not in json_list[0]: 
+            return None 
+        return json_list[0]['fantasy_ranks'] 
+         
 
 
     def GetActiveContestantsByUserNames(self, match_id): 
