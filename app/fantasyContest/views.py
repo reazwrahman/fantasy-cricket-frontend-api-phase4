@@ -42,23 +42,30 @@ def displayContestRanking():
         return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
     
     else:  
-        user_selection_tuples=[] 
-        for each in fantasy_ranking: 
-                user_selection_tuples.append((each[1],each[1]))
+        user_selection_tuples=[]  
+        user_selection_dict = {}
+        for each in fantasy_ranking:                                          
+                user_selection_tuples.append((each[-1],each[1])) ##user_id, user_name
+                user_selection_dict[each[-1]] = each[1]
 
         form= ActviveContestantsForm() 
         form.user_selection.choices=user_selection_tuples 
         if form.validate_on_submit():  
-            user_name = form.user_selection.data   
-            return redirect (url_for('fantasyContest.displayFullSquadSummary', match_id=match_id, user_name=user_name))
+            user_id = form.user_selection.data    
+            user_name = user_selection_dict[user_id]
+            return redirect (url_for('fantasyContest.displayFullSquadSummary',  
+                                     match_id=match_id, user_id=user_id, 
+                                     user_name = user_name))
 
-        return render_template('fantasyContest/displayContestRanking.html', game_title=game_title,ranked_contestants=fantasy_ranking, form=form)
+        fantasy_ranking_modified = display_helper.HideUserIdFromRanking(fantasy_ranking)
+        return render_template('fantasyContest/displayContestRanking.html', game_title=game_title,ranked_contestants=fantasy_ranking_modified, form=form)
 
 
 @fantasyContest.route('/displayFullSquadSummary', methods=['GET', 'POST'])
 def displayFullSquadSummary():   
     match_id = request.args['match_id'] 
-    user_name = request.args['user_name'] 
+    user_id = request.args['user_id']  
+    user_name = request.args['user_name']
     game_title = dynamo_access.GetGameTitle(match_id) 
     match_summary_points = dynamo_access.GetMatchSummaryPoints(match_id) 
 
@@ -68,8 +75,6 @@ def displayFullSquadSummary():
     
     form = ViewDetailsForm()     
 
-    #TODO implement when user table is stood up, use dummy for now
-    user_id = user_name[-1]
     squad_selection = dynamo_access.GetUserSelectedSquad(match_id, user_id)  
     summary = display_helper.CreateSummaryPointsDisplay(match_summary_points, squad_selection)
     summary_points_display = summary[0] 
@@ -87,7 +92,8 @@ def displayFullSquadSummary():
                 'game_title': game_title
                 } 
     if form.validate_on_submit(): 
-        return redirect(url_for('fantasyContest.displayPointsBreakdown', match_id=match_id, user_name=user_name))
+        return redirect(url_for('fantasyContest.displayPointsBreakdown', match_id=match_id,  
+                                user_id=user_id, user_name=user_name))
 
     return render_template("fantasyContest/viewFantasyPointSummary.html", df_display=df_display, 
                                 form=form) 
@@ -96,12 +102,11 @@ def displayFullSquadSummary():
 
 @fantasyContest.route('/displayPointsBreakdown', methods=['GET', 'POST'])
 def displayPointsBreakdown():   
-    match_id = request.args['match_id'] 
+    match_id = request.args['match_id']  
+    user_id = request.args['user_id']
     user_name = request.args['user_name']   
     game_title = dynamo_access.GetGameTitle(match_id) 
 
-    #TODO implement when user table is stood up, use dummy for now
-    user_id = user_name[-1]
     squad_selection = dynamo_access.GetUserSelectedSquad(match_id, user_id)
 
     batting_points = dynamo_access.GetMatchBreakdownPoints(match_id, 'batting_points')

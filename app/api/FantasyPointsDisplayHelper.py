@@ -5,7 +5,13 @@ used by frontend to create display dataframes
 '''
 class FantasyPointsDisplayHelper(object): 
     def __init__(self): 
-        pass 
+        pass  
+
+    def HideUserIdFromRanking(self, fantasy_ranking): 
+        for i in range (len(fantasy_ranking)): 
+            fantasy_ranking[i].pop() 
+        
+        return fantasy_ranking
 
     def GetSummaryPointsHeader(self): 
         return ['Name','Batting','Bowling','Fielding','Cap_Vc','Total']  
