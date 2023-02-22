@@ -11,10 +11,14 @@ from . import db, login_manager
 
 
 class Permission:
-    ADMIN = 16
+    ADMIN = 16 
+
+Roles_Table = {} 
+Roles_Table[1] = {'name': 'User', 'default': 1, 'permission':0} 
+Roles_Table[2] = {'name': 'Administrator', 'default': 0, 'permission':16}
 
 
-class Role(db.Model):
+'''class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
@@ -60,7 +64,7 @@ class Role(db.Model):
         return self.permissions & perm == perm
 
     def __repr__(self):
-        return '<Role %r>' % self.name
+        return '<Role %r>' % self.name'''
 
 
 
@@ -77,9 +81,9 @@ class User(UserMixin, db.Model):
         super(User, self).__init__(**kwargs)
         if self.role is None:
             if self.email == current_app.config['FLASKY_ADMIN']: 
-                self.role = Role.query.filter_by(name='Administrator').first()
+                self.role = Roles_Table[2]
             if self.role is None:
-                self.role = Role.query.filter_by(default=True).first()
+                self.role = Roles_Table[1]
         
     @property
     def password(self):
@@ -150,8 +154,8 @@ class User(UserMixin, db.Model):
         return True 
 
     def can(self, perm): 
-        return self.role is not None and self.role.has_permission(perm)
-
+        #return self.role is not None and self.role.has_permission(perm)
+        return self.role_id == 2
     def is_administrator(self): 
         return self.can(Permission.ADMIN)
 

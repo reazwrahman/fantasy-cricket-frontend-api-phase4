@@ -30,8 +30,9 @@ class Config:
 class DevelopmentConfig(Config):
     DEBUG = True 
     SSL_REDIRECT = False
-    SQLALCHEMY_DATABASE_URI = decouple.config('DEV_DATABASE_URL')
-    #or \   'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
+    #SQLALCHEMY_DATABASE_URI = decouple.config('DEV_DATABASE_URL') 
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
+    print (SQLALCHEMY_DATABASE_URI) 
 
 
 class TestingConfig(Config):

@@ -10,16 +10,11 @@ import sys
 import click
 from flask_migrate import Migrate, upgrade
 from app import create_app, db
-from app.models import User, Role, GameDetails, SelectedSquad
+from app.models import User, GameDetails, SelectedSquad 
 
-app = create_app("aws")
+app = create_app("development") #TODO: change back to aws
 migrate = Migrate(app, db) 
 
-
-@app.shell_context_processor
-def make_shell_context():
-    return dict(db=db, User=User, Role=Role,
-                GameDetails=GameDetails,SelectedSquad=SelectedSquad)
 
 
 @app.cli.command()
