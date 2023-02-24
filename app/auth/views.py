@@ -7,6 +7,9 @@ from ..models import User
 from ..email import send_email
 from .forms import ChangeUsernameForm, LoginForm, RegistrationForm, ChangePasswordForm,\
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
+from ..DynamoAccess import DynamoAccess
+
+dynamo_access = DynamoAccess()
 
 
 @auth.before_app_request
@@ -27,17 +30,20 @@ def unconfirmed():
 
 
 @auth.route('/login', methods=['GET', 'POST'])
-def login():
+def login(): 
     form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.lower()).first()
-        if user is not None and user.verify_password(form.password.data):
+    if form.validate_on_submit(): 
+        user = dynamo_access.GetUserByEmail(form.email.data.lower()) 
+        if user is None: 
+            flash('No user found with this email') 
+        elif not user.verify_password(form.password.data):  
+            flash('Invalid password.')
+        else: 
             login_user(user, form.remember_me.data)
             next = request.args.get('next')
             if next is None or not next.startswith('/'):
-                next = url_for('main.index')
+                next = url_for('main.index')            
             return redirect(next)
-        flash('Invalid email or password.')
     return render_template('auth/login.html', form=form)
 
 
@@ -54,10 +60,10 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(email=form.email.data.lower(),
-                    username=form.username.data,
-                    password=form.password.data)
-        db.session.add(user)
-        db.session.commit()
+                    user_name=form.username.data,
+                    raw_password=form.password.data)
+        
+        user_added = dynamo_access.AddUsers(user) 
         token = user.generate_confirmation_token()
         send_email(user.email, 'Confirm Your Account',
                    'auth/email/confirm', user=user, token=token)
@@ -68,15 +74,15 @@ def register():
 
 @auth.route('/confirm/<token>')
 @login_required
-def confirm(token):
-    if current_user.confirmed:
+def confirm(token): 
+    if dynamo_access.GetUserConfirmationStatus(current_user.id):
         return redirect(url_for('main.index'))
-    if current_user.confirm(token):
-        db.session.commit()
+    if current_user.confirm(token): 
+        dynamo_access.UpdateUserConfirmation(current_user.id)
         flash('You have confirmed your account. Thanks!')
-    else:
+    else: 
         flash('The confirmation link is invalid or has expired.')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index')) 
 
 
 @auth.route('/confirm')
@@ -95,9 +101,8 @@ def change_password():
     form = ChangePasswordForm()
     if form.validate_on_submit():
         if current_user.verify_password(form.old_password.data):
-            current_user.password = form.password.data
-            db.session.add(current_user)
-            db.session.commit()
+            current_user.password_hash = current_user.encrypt_password(form.password.data)
+            dynamo_access.UpdateUserPassword(current_user.id, current_user.password_hash)
             flash('Your password has been updated.')
             return redirect(url_for('main.index'))
         else:
@@ -112,7 +117,7 @@ def password_reset_request():
         return redirect(url_for('main.index'))
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.lower()).first()
+        user = dynamo_access.GetUserByEmail(form.email.data.lower())
         if user:
             token = user.generate_reset_token()
             send_email(user.email, 'Reset Your Password',
@@ -131,7 +136,6 @@ def password_reset(token):
     form = PasswordResetForm()
     if form.validate_on_submit():
         if User.reset_password(token, form.password.data):
-            db.session.commit()
             flash('Your password has been updated.')
             return redirect(url_for('auth.login'))
         else:
@@ -162,7 +166,6 @@ def change_email_request():
 @login_required
 def change_email(token):
     if current_user.change_email(token):
-        db.session.commit()
         flash('Your email address has been updated.')
     else:
         flash('Invalid request.')
@@ -176,8 +179,7 @@ def change_username():
     if form.validate_on_submit():      
         if current_user.verify_password(form.password.data): 
             current_user.username = form.new_username.data
-            db.session.add(current_user)
-            db.session.commit()
+            dynamo_access.UpdateUsername(current_user.id, current_user.username)
             flash('Your username has been updated')
             return redirect(url_for('main.index'))
         else:

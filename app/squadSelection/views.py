@@ -7,7 +7,7 @@ from pytz import timezone
 
 from . import squadSelection
 from .. import db
-from ..models import GameDetails, SelectedSquad
+from ..models import GameDetails
 from .forms import ActiveGamesForm, PlayerSelectionFormFactory, FinalizeSquadForm, ContinueButton, Cap_Vc_SelectionForm 
 
 

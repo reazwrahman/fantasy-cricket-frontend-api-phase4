@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 
 from . import gameSetup
 from .. import db
-from ..models import GameDetails, SelectedSquad
+from ..models import GameDetails
 from .forms import GameSetupForm, ActiveGamesForm, AddScoreCardForm, DeactivateGameForm, UpdateGameDetailsForm
 from ..DynamoAccess import DynamoAccess 
 from app.api.SquadGenerator.ListOfAllPlayers import AllPlayers 

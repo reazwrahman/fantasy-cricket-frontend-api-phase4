@@ -63,12 +63,38 @@ def create_table_selected_squads(table_name):
         'ProvisionedThroughput': { 'ReadCapacityUnits': 1, 'WriteCapacityUnits': 1 }
     }
         
-    
-    
+      
     table = dynamodb.create_table(**params)
     print(f"Creating {table_name} ...")
     table.wait_until_exists()
     print(table.item_count) 
+
+
+def create_table_users(table_name):
+    table_name = 'users'
+    table = dynamodb.Table(table_name)
+    try:
+        table.delete()  
+        print(f"Deleting {table.name}...")
+        table.wait_until_not_exists()
+    except: 
+        print (f"{table_name} doesn't exist")
+    params = { 
+        'TableName' : table_name, 
+        'KeySchema' : [ 
+                { 'AttributeName': 'user_id', 'KeyType': 'HASH'}
+            ],  
+        'AttributeDefinitions': [
+            { 'AttributeName': 'user_id', 'AttributeType': 'S' }
+            ], 
+        'ProvisionedThroughput': { 'ReadCapacityUnits': 1, 'WriteCapacityUnits': 1 }
+    }
+        
+      
+    table = dynamodb.create_table(**params)
+    print(f"Creating {table_name} ...")
+    table.wait_until_exists()
+    print(table.item_count)
 
 
 def insert():
