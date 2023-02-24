@@ -12,7 +12,7 @@ from flask_migrate import Migrate, upgrade
 from app import create_app, db
 from app.models import User, GameDetails 
 
-app = create_app("development") #TODO: change back to aws
+app = create_app("aws")
 migrate = Migrate(app, db) 
 
 
