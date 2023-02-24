@@ -166,7 +166,6 @@ def change_email_request():
 @login_required
 def change_email(token):
     if current_user.change_email(token):
-        db.session.commit()
         flash('Your email address has been updated.')
     else:
         flash('Invalid request.')
@@ -180,8 +179,7 @@ def change_username():
     if form.validate_on_submit():      
         if current_user.verify_password(form.password.data): 
             current_user.username = form.new_username.data
-            db.session.add(current_user)
-            db.session.commit()
+            dynamo_access.UpdateUsername(current_user.id, current_user.username)
             flash('Your username has been updated')
             return redirect(url_for('main.index'))
         else:

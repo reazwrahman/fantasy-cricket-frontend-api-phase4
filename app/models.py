@@ -107,16 +107,19 @@ class User(UserMixin):
         except:
             return False
         if data.get('change_email') != self.id:
-            return False
+            return False 
+        
+        ## has to be imported here to avoid circular dependencies
+        from app.DynamoAccess import DynamoAccess 
+        dynamo_access = DynamoAccess()
+        
         new_email = data.get('new_email')
         if new_email is None:
             return False
-        if self.query.filter_by(email=new_email).first() is not None:
+        if not dynamo_access.CheckIfEmailIsUnique(new_email):
             return False
         self.email = new_email
-        self.avatar_hash = self.gravatar_hash()
-        db.session.add(self)
-        return True 
+        return dynamo_access.UpdateUserEmail(self.id, new_email) 
 
     def can(self, perm):
         return self.role is not None and self.role['permission'] == perm

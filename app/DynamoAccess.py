@@ -298,6 +298,30 @@ class DynamoAccess(object):
                 },
                 ReturnValues="UPDATED_NEW"
             )     
+        return response['ResponseMetadata']['HTTPStatusCode'] == 200  
+    
+    def UpdateUserEmail(self, user_id, email): 
+        update_expression=  "set email=:email"  
+        response = self.users_table.update_item( 
+                Key={'user_id': user_id}, 
+                UpdateExpression= update_expression, 
+                ExpressionAttributeValues={
+                    ':email': json.loads(json.dumps(email), parse_float=Decimal)
+                },
+                ReturnValues="UPDATED_NEW"
+            )     
+        return response['ResponseMetadata']['HTTPStatusCode'] == 200  
+    
+    def UpdateUsername(self, user_id, user_name): 
+        update_expression=  "set user_name=:user_name"  
+        response = self.users_table.update_item( 
+                Key={'user_id': user_id}, 
+                UpdateExpression= update_expression, 
+                ExpressionAttributeValues={
+                    ':user_name': json.loads(json.dumps(user_name), parse_float=Decimal)
+                },
+                ReturnValues="UPDATED_NEW"
+            )     
         return response['ResponseMetadata']['HTTPStatusCode'] == 200 
            
 

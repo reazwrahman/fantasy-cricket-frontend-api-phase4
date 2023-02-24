@@ -46,9 +46,17 @@ class ChangePasswordForm(FlaskForm):
     submit = SubmitField('Update Password') 
 
 class ChangeUsernameForm(FlaskForm):
-    new_username = StringField('New Username', validators=[DataRequired()])   
+    new_username = StringField('New Username', validators=[
+        DataRequired(), Length(1, 64),
+        Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
+               'Usernames must have only letters, numbers, dots or '
+               'underscores')])   
     password = PasswordField('Enter password', validators=[DataRequired()])
-    submit = SubmitField('Update Username')
+    submit = SubmitField('Update Username') 
+
+    def validate_new_username(self, field):
+        if not dynamo_access.CheckIfUserNameIsUnique(field.data): 
+            raise ValidationError('This Username is already registered.')
 
 
 class PasswordResetRequestForm(FlaskForm):
@@ -71,5 +79,5 @@ class ChangeEmailForm(FlaskForm):
     submit = SubmitField('Update Email Address')
 
     def validate_email(self, field):
-        if User.query.filter_by(email=field.data.lower()).first():
-            raise ValidationError('Email already registered.')
+        if not dynamo_access.CheckIfEmailIsUnique(field.data.lower()):
+            raise ValidationError('This email is already registered.')
