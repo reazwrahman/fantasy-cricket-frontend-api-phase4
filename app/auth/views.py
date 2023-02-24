@@ -101,9 +101,8 @@ def change_password():
     form = ChangePasswordForm()
     if form.validate_on_submit():
         if current_user.verify_password(form.old_password.data):
-            current_user.password = form.password.data
-            db.session.add(current_user)
-            db.session.commit()
+            current_user.password_hash = current_user.encrypt_password(form.password.data)
+            dynamo_access.UpdateUserPassword(current_user.id, current_user.password_hash)
             flash('Your password has been updated.')
             return redirect(url_for('main.index'))
         else:
@@ -118,7 +117,7 @@ def password_reset_request():
         return redirect(url_for('main.index'))
     form = PasswordResetRequestForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.lower()).first()
+        user = dynamo_access.GetUserByEmail(form.email.data.lower())
         if user:
             token = user.generate_reset_token()
             send_email(user.email, 'Reset Your Password',
@@ -137,7 +136,6 @@ def password_reset(token):
     form = PasswordResetForm()
     if form.validate_on_submit():
         if User.reset_password(token, form.password.data):
-            db.session.commit()
             flash('Your password has been updated.')
             return redirect(url_for('auth.login'))
         else:

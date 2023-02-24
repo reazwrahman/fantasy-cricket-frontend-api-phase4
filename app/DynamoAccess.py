@@ -276,14 +276,25 @@ class DynamoAccess(object):
         response = self.users_table.put_item(Item = dynamo_item) 
         return response['ResponseMetadata']['HTTPStatusCode'] == 200 
 
-    def UpdateUserConfirmation(self, user_id): 
-        c = True 
+    def UpdateUserConfirmation(self, user_id):  
         update_expression=  "set confirmed=:confirmed"  
         response = self.users_table.update_item( 
                 Key={'user_id': user_id}, 
                 UpdateExpression= update_expression, 
                 ExpressionAttributeValues={
                     ':confirmed': json.loads(json.dumps(True), parse_float=Decimal)
+                },
+                ReturnValues="UPDATED_NEW"
+            )     
+        return response['ResponseMetadata']['HTTPStatusCode'] == 200 
+    
+    def UpdateUserPassword(self, user_id, password_hash): 
+        update_expression=  "set password_hash=:password_hash"  
+        response = self.users_table.update_item( 
+                Key={'user_id': user_id}, 
+                UpdateExpression= update_expression, 
+                ExpressionAttributeValues={
+                    ':password_hash': json.loads(json.dumps(password_hash), parse_float=Decimal)
                 },
                 ReturnValues="UPDATED_NEW"
             )     

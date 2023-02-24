@@ -83,13 +83,17 @@ class User(UserMixin):
         try:
             data = s.loads(token.encode('utf-8'))
         except:
-            return False
-        user = User.query.get(data.get('reset'))
+            return False 
+        
+         ## has to be imported here to avoid circular dependencies
+        from app.DynamoAccess import DynamoAccess 
+        dynamo_access = DynamoAccess()
+        user = dynamo_access.GetUserById(data.get('reset'))
         if user is None:
             return False
-        user.password = new_password
-        db.session.add(user)
-        return True
+        user.password_hash = user.encrypt_password(new_password)
+        pw_udpated = dynamo_access.UpdateUserPassword(user.id, user.password_hash)
+        return pw_udpated
 
     def generate_email_change_token(self, new_email, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
@@ -134,12 +138,16 @@ class User(UserMixin):
 
     @staticmethod
     def verify_auth_token(token):
+         ## has to be imported here to avoid circular dependencies
+        from app.DynamoAccess import DynamoAccess 
+        dynamo_access = DynamoAccess()
+        
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
         except:
             return None
-        return User.query.get(data['id'])
+        return dynamo_access.GetUserById(data['id'])
 
     def __repr__(self):
         return '<User %r>' % self.username
