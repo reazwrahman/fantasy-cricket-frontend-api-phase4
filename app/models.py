@@ -28,6 +28,7 @@ class User(UserMixin):
  
         self.email = kwargs['email'] 
         self.username = kwargs['user_name'] 
+
         if 'raw_password' in kwargs: ## for first time user registration 
             self.id = self.generate_unique_id()
             self.password_hash = self.encrypt_password(kwargs['raw_password'])   
@@ -54,8 +55,6 @@ class User(UserMixin):
         return generate_password_hash(password) 
 
     def verify_password(self, password): 
-        print(f'db password: {self.password_hash}') 
-        print (f'entered pw: {password}') 
         return check_password_hash(self.password_hash, password)
 
     def generate_confirmation_token(self, expiration=3600):
@@ -192,16 +191,6 @@ class GameDetails(db.Model):
     def __repr__(self):
         return '<GameDetails %r>' % self.match_id 
 
-
-### Database model to store fantasy squad selection for each user ##### 
-class SelectedSquad(db.Model): 
-    __tablename__ = 'selectedSquad'
-    id = db.Column(db.Integer, primary_key=True) 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id')) 
-    match_id = db.Column(db.BigInteger,index=True) 
-    selected_squad=db.Column(db.String) 
-    captain= db.Column(db.String)  
-    vice_captain= db.Column(db.String) 
 
 
 
