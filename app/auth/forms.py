@@ -2,8 +2,11 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 from wtforms import ValidationError
-from ..models import User
 
+from ..models import User 
+from ..DynamoAccess import DynamoAccess
+ 
+dynamo_access = DynamoAccess()
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(1, 64),
@@ -27,13 +30,12 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_email(self, field):
-        if User.query.filter_by(email=field.data.lower()).first():
+        if not dynamo_access.CheckIfEmailIsUnique(field.data.lower()):
             raise ValidationError('Email already registered.')
-
+        
     def validate_username(self, field):
-        if User.query.filter_by(username=field.data).first():
-            raise ValidationError('Username already in use.')
-
+        if not dynamo_access.CheckIfUserNameIsUnique(field.data): 
+            raise ValidationError('This Username is already registered.')
 
 class ChangePasswordForm(FlaskForm):
     old_password = PasswordField('Old password', validators=[DataRequired()])

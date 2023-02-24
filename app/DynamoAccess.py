@@ -5,7 +5,7 @@ import simplejson as json
 from decimal import Decimal 
 from boto3.dynamodb.conditions import Key, Attr 
 
-from .models import GameDetails
+from .models import GameDetails, User
 
 ''' 
 Responsible for handling all dynamo related calls  
@@ -18,7 +18,10 @@ class DynamoAccess(object):
         self.match_table = self.dynamodb.Table(self.match_info_table_name)   
 
         self.selected_squads_table_name = 'selected_squads'
-        self.squad_table = self.dynamodb.Table(self.selected_squads_table_name)
+        self.squad_table = self.dynamodb.Table(self.selected_squads_table_name) 
+
+        self.users_table_name = 'users' 
+        self.users_table = self.dynamodb.Table(self.users_table_name)
 
 
     ''' ------------------------------------ COMMON QUERIES ------------------------------------ ''' 
@@ -228,11 +231,6 @@ class DynamoAccess(object):
         return deletion_successful
 
         
- 
-
-
-
-    
     def AddMatchSquad(self, match_id, squad_object): 
         update_expression=  "set match_squad=:match_squad"   
         try:
@@ -265,3 +263,78 @@ class DynamoAccess(object):
         except: 
             return False     
     
+    ''' ------------------------------------ USERS ------------------------------------ '''   
+    def AddUsers(self, user_object:User):  
+        dynamo_item = {'user_id': user_object.id, 
+                       'user_name': user_object.username,  
+                       'email': user_object.email, 
+                       'password_hash': user_object.password_hash,   
+                       'role': user_object.role,
+                       'confirmed': user_object.confirmed
+                     } 
+        
+        response = self.users_table.put_item(Item = dynamo_item) 
+        return response['ResponseMetadata']['HTTPStatusCode'] == 200 
+
+    def UpdateUserConfirmation(self, user_id): 
+        c = True 
+        update_expression=  "set confirmed=:confirmed"  
+        response = self.users_table.update_item( 
+                Key={'user_id': user_id}, 
+                UpdateExpression= update_expression, 
+                ExpressionAttributeValues={
+                    ':confirmed': json.loads(json.dumps(True), parse_float=Decimal)
+                },
+                ReturnValues="UPDATED_NEW"
+            )     
+        return response['ResponseMetadata']['HTTPStatusCode'] == 200 
+           
+
+    def GetUserConfirmationStatus(self, user_id): 
+        response = self.users_table.query( 
+                KeyConditionExpression=Key('user_id').eq(user_id),  
+                ProjectionExpression = 'confirmed')  
+        
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True)) 
+        return json_list[0]['confirmed']  
+    
+    def CheckIfEmailIsUnique(self, email_address): 
+        response = self.users_table.scan(
+                    FilterExpression=Attr('email').eq(email_address)
+                    ) 
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+        return len(json_list) == 0
+           
+
+    def CheckIfUserNameIsUnique(self, user_name): 
+        response = self.users_table.scan(
+                    FilterExpression=Attr('user_name').eq(user_name)
+                    ) 
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+        return len(json_list) == 0  
+    
+    def GetUserByEmail(self, email_address): 
+        response = self.users_table.scan(
+                    FilterExpression=Attr('email').eq(email_address.lower())
+                    ) 
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True)) 
+        if len(json_list) == 0 or len(json_list)>1: 
+            return None 
+        else:   
+            user_object = User(**json_list[0])
+            return user_object 
+    
+    def GetUserById(self, user_id): 
+        response = self.users_table.query( 
+                KeyConditionExpression=Key('user_id').eq(user_id))
+         
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+        if len(json_list) == 0 or len(json_list)>1: 
+            return None 
+        else:   
+            user_object = User(**json_list[0])
+            return user_object 
+           
+    
+           
+       

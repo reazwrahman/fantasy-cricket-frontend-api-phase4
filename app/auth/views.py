@@ -7,6 +7,9 @@ from ..models import User
 from ..email import send_email
 from .forms import ChangeUsernameForm, LoginForm, RegistrationForm, ChangePasswordForm,\
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
+from ..DynamoAccess import DynamoAccess
+
+dynamo_access = DynamoAccess()
 
 
 @auth.before_app_request
@@ -27,17 +30,20 @@ def unconfirmed():
 
 
 @auth.route('/login', methods=['GET', 'POST'])
-def login():
+def login(): 
     form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.lower()).first()
-        if user is not None and user.verify_password(form.password.data):
+    if form.validate_on_submit(): 
+        user = dynamo_access.GetUserByEmail(form.email.data.lower()) 
+        if user is None: 
+            flash('No user found with this email') 
+        elif not user.verify_password(form.password.data):  
+            flash('Invalid password.')
+        else: 
             login_user(user, form.remember_me.data)
             next = request.args.get('next')
             if next is None or not next.startswith('/'):
-                next = url_for('main.index')
+                next = url_for('main.index')            
             return redirect(next)
-        flash('Invalid email or password.')
     return render_template('auth/login.html', form=form)
 
 
@@ -54,10 +60,10 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(email=form.email.data.lower(),
-                    username=form.username.data,
-                    password=form.password.data)
-        db.session.add(user)
-        db.session.commit()
+                    user_name=form.username.data,
+                    raw_password=form.password.data)
+        
+        user_added = dynamo_access.AddUsers(user) 
         token = user.generate_confirmation_token()
         send_email(user.email, 'Confirm Your Account',
                    'auth/email/confirm', user=user, token=token)
@@ -68,15 +74,15 @@ def register():
 
 @auth.route('/confirm/<token>')
 @login_required
-def confirm(token):
-    if current_user.confirmed:
+def confirm(token): 
+    if dynamo_access.GetUserConfirmationStatus(current_user.id):
         return redirect(url_for('main.index'))
-    if current_user.confirm(token):
-        db.session.commit()
+    if current_user.confirm(token): 
+        dynamo_access.UpdateUserConfirmation(current_user.id)
         flash('You have confirmed your account. Thanks!')
-    else:
+    else: 
         flash('The confirmation link is invalid or has expired.')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.index')) 
 
 
 @auth.route('/confirm')

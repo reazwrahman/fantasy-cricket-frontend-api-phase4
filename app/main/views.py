@@ -7,7 +7,10 @@ from .forms import EditProfileForm, EditProfileAdminForm, PostForm,\
     CommentForm
 from .. import db
 from ..models import Permission, User
-from ..decorators import admin_required, permission_required
+from ..decorators import admin_required, permission_required 
+from ..DynamoAccess import DynamoAccess 
+
+dynamo_access = DynamoAccess()
 
 
 @main.after_app_request
@@ -37,7 +40,7 @@ def index():
     isAdmin=False
 
     if current_user.is_authenticated:
-        user_object=User.query.filter_by(id=current_user.id).first() 
+        user_object=dynamo_access.GetUserById(current_user.id)
         isAdmin=user_object.is_administrator()
     
     return render_template('index.html', isAdmin=isAdmin)
