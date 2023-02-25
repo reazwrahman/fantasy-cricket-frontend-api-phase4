@@ -37,7 +37,6 @@ def displayContestRanking():
 
     ## check if database has rankings updated yet
     fantasy_ranking = dynamo_access.GetFantasyRanking(match_id)
-    print(fantasy_ranking)
     if not fantasy_ranking:
         return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
     
@@ -58,8 +57,6 @@ def displayContestRanking():
                                      user_name = user_name))
 
         fantasy_ranking_modified = display_helper.HideUserIdFromRanking(fantasy_ranking)
-        print(fantasy_ranking_modified) 
-        print(game_title)
         return render_template('fantasyContest/displayContestRanking.html', game_title=game_title,ranked_contestants=fantasy_ranking_modified, form=form)
 
 
