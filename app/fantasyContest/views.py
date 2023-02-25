@@ -36,7 +36,10 @@ def displayContestRanking():
     active_contestants = dynamo_access.GetActiveContestantsByUserNames(match_id)
 
     ## check if database has rankings updated yet
-    fantasy_ranking = dynamo_access.GetFantasyRanking(match_id)
+    fantasy_ranking = dynamo_access.GetFantasyRanking(match_id) 
+    last_updated = dynamo_access.GetLastPointsUpdateTime(match_id) 
+    print (last_updated)
+
     if not fantasy_ranking:
         return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
     
@@ -57,7 +60,8 @@ def displayContestRanking():
                                      user_name = user_name))
 
         fantasy_ranking_modified = display_helper.HideUserIdFromRanking(fantasy_ranking)
-        return render_template('fantasyContest/displayContestRanking.html', game_title=game_title,ranked_contestants=fantasy_ranking_modified, form=form)
+        return render_template('fantasyContest/displayContestRanking.html', game_title=game_title,ranked_contestants=fantasy_ranking_modified,  
+                               last_updated = last_updated, form=form)
 
 
 @fantasyContest.route('/displayFullSquadSummary', methods=['GET', 'POST'])

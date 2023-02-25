@@ -99,9 +99,19 @@ class DynamoAccess(object):
         json_list = json.loads(json.dumps(response["Items"], use_decimal=True))  
         if 'fantasy_ranks' not in json_list[0]: 
             return None 
-        return json_list[0]['fantasy_ranks'] 
+        return json_list[0]['fantasy_ranks']  
+    
+    def GetLastPointsUpdateTime(self, match_id): 
+        response = self.match_table.query( 
+                KeyConditionExpression=Key('match_id').eq(match_id),  
+                ProjectionExpression = 'last_updated')   
+        
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))  
+        if 'last_updated' not in json_list[0]: 
+            return None  
+        
+        return json_list[0]['last_updated']
          
-
 
     def GetActiveContestantsByUserNames(self, match_id): 
         active_contestants = []  
