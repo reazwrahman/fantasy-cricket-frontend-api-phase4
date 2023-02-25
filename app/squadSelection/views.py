@@ -240,7 +240,7 @@ def finalizeSquad():
                                 'captain': Cap_Vc_Dict['captain'], 
                                 'vice_captain': Cap_Vc_Dict['vice_captain'] 
                               } 
-            dynamo_access.AddSelectedSquad(match_id, current_user.id, 'username'+str(current_user.id), fantasy_squad)    
+            dynamo_access.AddSelectedSquad(match_id, current_user.id, fantasy_squad)    
 
             flash('Congrats! Your squad has been submitted') 
             return redirect(url_for('main.index'))

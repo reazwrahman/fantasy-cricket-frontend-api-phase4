@@ -248,12 +248,13 @@ class DynamoAccess(object):
 
 
     ''' ------------------------------------ SQUADSELECTION ------------------------------------ '''  
-    def AddSelectedSquad(self, match_id, user_id, user_name, selected_squad): 
-        composite_key = match_id+'#'+str(user_id)
+    def AddSelectedSquad(self, match_id, user_id, selected_squad): 
+        composite_key = match_id+'#'+str(user_id) 
+        user_object = self.GetUserById(user_id)
         dynamo_item = {'match_id#user_id': composite_key, # primary composite key
                        'match_id':match_id, 
                        'user_id': user_id,  
-                       'user_name': user_name,
+                       'user_name': user_object.username,
                        'squad_selection': json.loads(json.dumps(selected_squad), parse_float=Decimal)
                        } 
         

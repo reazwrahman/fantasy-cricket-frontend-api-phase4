@@ -37,7 +37,7 @@ def displayContestRanking():
 
     ## check if database has rankings updated yet
     fantasy_ranking = dynamo_access.GetFantasyRanking(match_id)
-
+    print(fantasy_ranking)
     if not fantasy_ranking:
         return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
     
@@ -46,7 +46,7 @@ def displayContestRanking():
         user_selection_dict = {}
         for each in fantasy_ranking:                                          
                 user_selection_tuples.append((each[-1],each[1])) ##user_id, user_name
-                user_selection_dict[each[-1]] = each[1]
+                user_selection_dict[each[-1]] = each[1] # {user_id: user_name}
 
         form= ActviveContestantsForm() 
         form.user_selection.choices=user_selection_tuples 
@@ -58,6 +58,8 @@ def displayContestRanking():
                                      user_name = user_name))
 
         fantasy_ranking_modified = display_helper.HideUserIdFromRanking(fantasy_ranking)
+        print(fantasy_ranking_modified) 
+        print(game_title)
         return render_template('fantasyContest/displayContestRanking.html', game_title=game_title,ranked_contestants=fantasy_ranking_modified, form=form)
 
 
@@ -79,10 +81,6 @@ def displayFullSquadSummary():
     summary = display_helper.CreateSummaryPointsDisplay(match_summary_points, squad_selection)
     summary_points_display = summary[0] 
     total_points = summary[1]
-
-
-    '''Fantasy_Calculator = __getFantasyCalculatorObject__(match_id=match_id, user_id = user_id)
-    full_squad_df=Fantasy_Calculator.GetFullSquadDf() ''' 
 
     df_display= {  
                 'headings' : display_helper.GetSummaryPointsHeader(), 
