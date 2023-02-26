@@ -149,7 +149,7 @@ def UpdateGameDetails():
                 
 
 
-        if len(game_start_time) > 5:   ## just an arbitrary value to make sure it's not an empty string
+        if type(game_start_time) == list:   ## to avoid empty or 'na' string
             dynamo_access.UpdateSquadLink(selected_game_id, game_start_time)  
             flash ('Game Start Time Updated')
 
