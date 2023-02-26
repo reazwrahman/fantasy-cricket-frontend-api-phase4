@@ -150,7 +150,7 @@ def UpdateGameDetails():
 
 
         if len(game_start_time) > 3:   ## to avoid empty or 'na' string
-            dynamo_access.UpdateSquadLink(selected_game_id, game_start_time)  
+            dynamo_access.UpdateStartTime(selected_game_id, game_start_time)  
             flash ('Game Start Time Updated')
 
     return render_template('gameSetup/updateGameDetails.html',form=form)
