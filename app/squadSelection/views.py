@@ -112,7 +112,8 @@ def selectBatters():
                                         selected_batters=session['selected_batters']))
 
         return render_template('squadSelection/playerSelectionPage.html',instruction=instruction_header, 
-                                    time_left=time_left,form=formForBatters)    
+                                    time_left=time_left,players_selected_count = 0, 
+                                    form=formForBatters)    
 
 
 
@@ -169,7 +170,8 @@ def selectBowlers():
                                         full_squad=session['full_squad']))
         
         return render_template('squadSelection/playerSelectionPage.html',instruction=instruction_header, 
-                            time_left=time_left, form=formForBowlers)   
+                            time_left=time_left, players_selected_count = len(batterSelections), 
+                            form=formForBowlers)   
 
 
 @squadSelection.route('/selectCapAndVc', methods=['GET', 'POST']) 
@@ -207,7 +209,8 @@ def selectCapAndVc():
                                         cap_vc_dict=session['Cap_Vc_Dict']))
 
         return render_template('squadSelection/captainAndVcSelectionPage.html', 
-                            time_left=time_left,form=form)
+                            time_left=time_left,players_selected_count=len(full_squad), 
+                            form=form)
         
 
 
