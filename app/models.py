@@ -187,7 +187,8 @@ class GameDetails(db.Model):
     points_per_wicket=db.Column(db.Float)
     game_start_time = db.Column(db.String) 
     team1 = db.Column(db.String) 
-    team2 = db.Column(db.String)
+    team2 = db.Column(db.String) 
+    match_result = db.Column(db.String)
     
 
     def __repr__(self):

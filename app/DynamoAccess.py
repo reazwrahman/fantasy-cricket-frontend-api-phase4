@@ -175,7 +175,8 @@ class DynamoAccess(object):
                        'squad_link': game_details.squad_link, 
                        'game_start_time': game_details.game_start_time, 
                        'team1': game_details.team1, 
-                       'team2': game_details.team2
+                       'team2': game_details.team2, 
+                       'match_result': game_details.match_result
                        } 
         
         try:

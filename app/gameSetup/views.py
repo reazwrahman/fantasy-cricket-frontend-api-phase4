@@ -30,7 +30,8 @@ def SetupGame():
                     squad_link=form.squad_link.data, 
                     game_start_time=form.game_start_time.data, 
                     team1=form.team1.data, 
-                    team2=form.team2.data) 
+                    team2=form.team2.data, 
+                    match_result='unknown') 
         
         ## add initial game info on database
         game_created = dynamo_access.CreateNewGame(game_details)

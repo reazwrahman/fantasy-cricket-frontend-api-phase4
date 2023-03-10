@@ -18,7 +18,7 @@ class MatchPredictionHelper(object):
         if self.options_dict == None:  
             self.options_dict = {}
             self.options_dict['team1']=self.teams[0]+' will win' 
-            self.options_dict['team1']=self.teams[0]+' will win'  
+            self.options_dict['team2']=self.teams[1]+' will win'  
             self.options_dict['draw']='draw/tie'
         return self.options_dict
 
