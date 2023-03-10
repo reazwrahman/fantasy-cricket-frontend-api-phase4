@@ -51,6 +51,21 @@ class DynamoAccess(object):
         
         json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
         return json_list[0]['game_start_time'] 
+
+    def GetTeamNames(self, match_id): 
+        response = self.match_table.query( 
+                KeyConditionExpression=Key('match_id').eq(match_id),  
+                ProjectionExpression = 'team1')         
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+        team1 = json_list[0]['team1']  
+
+        response = self.match_table.query( 
+                KeyConditionExpression=Key('match_id').eq(match_id),  
+                ProjectionExpression = 'team2')   
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True)) 
+        team2 = json_list[0]['team2']   
+
+        return [team1, team2]
     
     def GetScorecardInfo(self, match_id): 
         ''' 
@@ -158,7 +173,9 @@ class DynamoAccess(object):
                        'game_title': game_details.game_title, 
                        'game_status': game_details.game_status, 
                        'squad_link': game_details.squad_link, 
-                       'game_start_time': game_details.game_start_time 
+                       'game_start_time': game_details.game_start_time, 
+                       'team1': game_details.team1, 
+                       'team2': game_details.team2
                        } 
         
         try:

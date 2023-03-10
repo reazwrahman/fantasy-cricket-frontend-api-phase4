@@ -44,6 +44,7 @@ class Cap_Vc_SelectionForm(FlaskForm):
     
     captain = SelectField(u'Select your Captain (x2 pts): ') 
     vice_captain = SelectField(u'Select your Vice Captain (x1.5 pts): ') 
+    match_prediction = SelectField(u'Match prediction (+100 pts)')
     submit = SubmitField('Next')  
 
 ######## ------------------------------------------------------#### 
