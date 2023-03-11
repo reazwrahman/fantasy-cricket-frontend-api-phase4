@@ -11,6 +11,8 @@ class GameSetupForm(FlaskForm):
     game_status=StringField('Active/Inactive', validators=[DataRequired()]) 
     squad_link=StringField('Enter the link for squad', validators=[DataRequired()])  
     game_start_time = StringField('Game Start Time in EST [year,month,day,hour,minute]') 
+    team1= StringField('Team 1 Name') 
+    team2= StringField('Team 2 Name') 
     submit = SubmitField('Setup')
 
 ############# FORM TO DISPLAY ACTIVE GAMES IN THE DATABASE AND COLLECT USER INPUT

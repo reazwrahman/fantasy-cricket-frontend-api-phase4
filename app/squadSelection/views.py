@@ -13,8 +13,9 @@ from .forms import ActiveGamesForm, PlayerSelectionFormFactory, FinalizeSquadFor
 
 from ..DynamoAccess import DynamoAccess 
 from app.api.SquadGenerator.SquadOperators import SquadOperators
+from app.api.MatchPredictionHelper import MatchPredictionHelper
 
-dynamo_access = DynamoAccess() 
+dynamo_access = DynamoAccess()  
 
 @squadSelection.route('/displayNavigations', methods=['GET', 'POST']) 
 @login_required 
@@ -180,7 +181,10 @@ def selectCapAndVc():
     ## get session variables
     match_id=session.get('selected_game_id')   
     full_squad=session.get('full_squad')  
-    match_squad = session.get('match_squad')
+    match_squad = session.get('match_squad')  
+
+    match_prediction_helper = MatchPredictionHelper(match_id)
+    match_predictions = match_prediction_helper.GetAllOptions()
 
     ## see how much time is left, or if it has expired already 
     is_window_open, time_left = __getTimeLeftIndicator__(match_id) 
@@ -195,7 +199,8 @@ def selectCapAndVc():
             squad_tuple.append((each,match_squad[each]['Name']))
 
         form.captain.choices= squad_tuple 
-        form.vice_captain.choices= squad_tuple
+        form.vice_captain.choices= squad_tuple 
+        form.match_prediction.choices = match_predictions
 
         if form.validate_on_submit():   
             if form.captain.data == form.vice_captain.data: 
@@ -203,8 +208,9 @@ def selectCapAndVc():
             else:  
                 Cap_Vc_Dict={}
                 Cap_Vc_Dict['captain']=form.captain.data 
-                Cap_Vc_Dict['vice_captain']=form.vice_captain.data   
-                session['Cap_Vc_Dict']=Cap_Vc_Dict
+                Cap_Vc_Dict['vice_captain']=form.vice_captain.data 
+                Cap_Vc_Dict['result_prediction']=form.match_prediction.data 
+                session['Cap_Vc_Dict']=Cap_Vc_Dict 
                 return redirect(url_for('squadSelection.finalizeSquad', 
                                         cap_vc_dict=session['Cap_Vc_Dict']))
 
@@ -223,12 +229,16 @@ def finalizeSquad():
     match_id=session.get('selected_game_id')  
     match_squad=session.get('match_squad') 
     squad_operator = SquadOperators(match_squad)
+    match_prediction_helper = MatchPredictionHelper(match_id)
+    prediction_dict = match_prediction_helper.GetOptionsDict()
+    print (prediction_dict)
 
     full_squad_names = squad_operator.GetNamesListFromIds(full_squad, match_squad) 
     full_squad_names = squad_operator.AttachPlayingXiTagToNames(full_squad_names, match_squad)
 
     cap_vc_dict_names={'captain':match_squad[Cap_Vc_Dict['captain']]['Name'], 
-                       'vice_captain': match_squad[Cap_Vc_Dict['vice_captain']]['Name']}
+                       'vice_captain': match_squad[Cap_Vc_Dict['vice_captain']]['Name'], 
+                       'result_prediction': prediction_dict[Cap_Vc_Dict['result_prediction']]}
 
     ## see how much time is left, or if it has expired already 
     is_window_open, time_left = __getTimeLeftIndicator__(match_id)  
@@ -239,9 +249,10 @@ def finalizeSquad():
     else:
         form=FinalizeSquadForm() 
         if form.validate_on_submit():   
-            fantasy_squad={ 'selected_squad': full_squad, 
+            fantasy_squad={     'selected_squad': full_squad, 
                                 'captain': Cap_Vc_Dict['captain'], 
-                                'vice_captain': Cap_Vc_Dict['vice_captain'] 
+                                'vice_captain': Cap_Vc_Dict['vice_captain'], 
+                                'result_prediction': Cap_Vc_Dict['result_prediction']
                               } 
             dynamo_access.AddSelectedSquad(match_id, current_user.id, fantasy_squad)    
 
@@ -274,7 +285,9 @@ def viewMySquad_Part1():
 def viewMySquad_Part2(): 
     match_id=request.args['match_id']  
     squad_selection = dynamo_access.GetUserSelectedSquad(match_id, current_user.id)  
-    match_squad = dynamo_access.GetMatchSquad(match_id)
+    match_squad = dynamo_access.GetMatchSquad(match_id) 
+    match_prediction_helper = MatchPredictionHelper(match_id) 
+    prediction_dict = match_prediction_helper.GetOptionsDict()
     
     if squad_selection is not None: 
         selected_squad = squad_selection['selected_squad'] 
@@ -288,11 +301,13 @@ def viewMySquad_Part2():
         selected_squad_names = squad_operator.AttachPlayingXiTagToNames(selected_squad_names, match_squad)
         captain_name = match_squad[captain]['Name'] 
         vc_name = match_squad[vice_captain]['Name']
+        result_prediction = prediction_dict[squad_selection['result_prediction']]
         squad_by_names = selected_squad_names
         display_dict={
                     'full_squad': squad_by_names,
                     'captain': captain_name,
-                    'vice_captain': vc_name  
+                    'vice_captain': vc_name, 
+                    'result_prediction': result_prediction 
                     } 
         return render_template('squadSelection/viewMySquad.html',display_dict=display_dict)   
     else: 
