@@ -13,15 +13,14 @@ class FantasyPointsDisplayHelper(object):
         
         return fantasy_ranking
     
-    def AddMedalsToRanking(self, fantasy_ranking): 
-                    ## GOLD, SILVER, BRONZE EMOJI
-        medals = [ u"\U0001F947",u"\U0001F948", u"\U0001F949", ]
-        for i in range(len(fantasy_ranking)):
-            fantasy_ranking[i][0] = str(fantasy_ranking[i][0])  
-            if len(medals) > 0: 
-                curr_medal = medals.pop(0)
-                fantasy_ranking[i][0] += curr_medal 
-        
+    def AddMedalsToRanking(self, fantasy_ranking):               
+                    ## BRONZE, SILVER, GOLD EMOJI
+        medals = [u"\U0001F949", u"\U0001F948", u"\U0001F947"]
+        i = 0 
+        while i < len(fantasy_ranking) and len(medals) > 0:
+            curr_medal = medals.pop() 
+            fantasy_ranking[i][0] += curr_medal 
+            i+=1 
         return fantasy_ranking
 
 
