@@ -193,7 +193,3 @@ class GameDetails(db.Model):
 
     def __repr__(self):
         return '<GameDetails %r>' % self.match_id 
-
-
-
-

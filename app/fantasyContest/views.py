@@ -9,7 +9,8 @@ from .. import db
 from ..models import GameDetails, User 
 from .forms import ActviveContestantsForm, ActiveGamesForm, ViewDetailsForm
 
-from ..api.FantasyPointsDisplayHelper import FantasyPointsDisplayHelper
+from ..api.FantasyPointsDisplayHelper import FantasyPointsDisplayHelper 
+from ..api.MatchPredictionHelper import MatchPredictionHelper
 from ..DynamoAccess import DynamoAccess  
 
 dynamo_access = DynamoAccess() 
@@ -33,7 +34,8 @@ def displayActiveGames():
 def displayContestRanking():   
     match_id = request.args['match_id']  
     game_title = dynamo_access.GetGameTitle(match_id) 
-    active_contestants = dynamo_access.GetActiveContestantsByUserNames(match_id)
+    active_contestants = dynamo_access.GetActiveContestantsByUserNames(match_id) 
+    match_result = dynamo_access.GetMatchResult(match_id)
 
     ## check if database has rankings updated yet
     fantasy_ranking = dynamo_access.GetFantasyRanking(match_id) 
@@ -60,6 +62,10 @@ def displayContestRanking():
                                      user_name = user_name))
 
         fantasy_ranking_modified = display_helper.HideUserIdFromRanking(fantasy_ranking)
+        if match_result != 'unknown':  
+            fantasy_ranking_modified = display_helper.AddMedalsToRanking(fantasy_ranking_modified) 
+
+
         return render_template('fantasyContest/displayContestRanking.html', game_title=game_title,ranked_contestants=fantasy_ranking_modified,  
                                last_updated = last_updated, form=form)
 
@@ -70,7 +76,18 @@ def displayFullSquadSummary():
     user_id = request.args['user_id']  
     user_name = request.args['user_name']
     game_title = dynamo_access.GetGameTitle(match_id) 
-    match_summary_points = dynamo_access.GetMatchSummaryPoints(match_id) 
+    match_summary_points = dynamo_access.GetMatchSummaryPoints(match_id)  
+    
+    ## match result and prediciton points
+    match_prediction_helper = MatchPredictionHelper(match_id) 
+    prediction_dict = match_prediction_helper.GetOptionsDict()   
+    match_result = dynamo_access.GetMatchResult(match_id) 
+    match_prediction = dynamo_access.GetUserMatchPrediction(match_id, user_id)
+    match_prediction_translated = prediction_dict[match_prediction]  
+    prediction_bonus = " 0 points"
+    if match_result == match_prediction: 
+        prediction_bonus = "100 points" 
+
 
     if not match_summary_points:
         return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=[]) 
@@ -82,13 +99,17 @@ def displayFullSquadSummary():
     summary = display_helper.CreateSummaryPointsDisplay(match_summary_points, squad_selection)
     summary_points_display = summary[0] 
     total_points = summary[1]
+    if prediction_bonus == "100 points": 
+        total_points +=100
 
     df_display= {  
                 'headings' : display_helper.GetSummaryPointsHeader(), 
                 'rows' : summary_points_display,
                 'total_points': total_points,
                 'user_name': user_name, 
-                'game_title': game_title
+                'game_title': game_title, 
+                'match_prediction': match_prediction_translated, 
+                'prediction_bonus': prediction_bonus
                 } 
     if form.validate_on_submit(): 
         return redirect(url_for('fantasyContest.displayPointsBreakdown', match_id=match_id,  

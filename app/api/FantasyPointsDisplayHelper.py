@@ -12,6 +12,18 @@ class FantasyPointsDisplayHelper(object):
             fantasy_ranking[i].pop() 
         
         return fantasy_ranking
+    
+    def AddMedalsToRanking(self, fantasy_ranking): 
+                    ## GOLD, SILVER, BRONZE EMOJI
+        medals = [ u"\U0001F947",u"\U0001F948", u"\U0001F949", ]
+        for i in range(len(fantasy_ranking)):
+            fantasy_ranking[i][0] = str(fantasy_ranking[i][0])  
+            if len(medals) > 0: 
+                curr_medal = medals.pop(0)
+                fantasy_ranking[i][0] += curr_medal 
+        
+        return fantasy_ranking
+
 
     def GetSummaryPointsHeader(self): 
         return ['Name','Batting','Bowling','Fielding','Cap_Vc','Total']  

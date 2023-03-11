@@ -65,8 +65,21 @@ class DynamoAccess(object):
         json_list = json.loads(json.dumps(response["Items"], use_decimal=True)) 
         team2 = json_list[0]['team2']   
 
-        return [team1, team2]
+        return [team1, team2] 
     
+    def GetMatchResult(self, match_id:str): 
+        response = self.match_table.query( 
+                KeyConditionExpression=Key('match_id').eq(match_id),  
+                ProjectionExpression = 'match_result')   
+        
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+
+        if len(json_list) < 1: 
+            raise ValueError("NO ITEM FOUND FOR THE GIVEN MATCH ID, CHECK THE ID OR CHECK DATABASE")
+        else:  
+            return json_list[0]['match_result'] 
+    
+
     def GetScorecardInfo(self, match_id): 
         ''' 
             reads dynamo and returns game_details 
@@ -163,8 +176,19 @@ class DynamoAccess(object):
         if len(json_list) < 1: 
             return None
         else:  
-            return json_list[0][which_department] 
+            return json_list[0][which_department]   
+    
 
+    def GetUserMatchPrediction(self, match_id, user_id):
+        composite_key = match_id+'#'+str(user_id)
+        response = self.squad_table.scan(
+                    FilterExpression=Attr("match_id#user_id").eq(composite_key)
+                    ) 
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+        if len(json_list) < 1: 
+            return None
+        else:  
+            return json_list[0]['squad_selection']['result_prediction'] 
 
     ''' ------------------------------------ SETUPGAME ------------------------------------ '''
 
