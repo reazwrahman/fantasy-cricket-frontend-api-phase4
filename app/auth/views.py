@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, login_required, \
 from . import auth
 from .. import db
 from ..models import User
-from ..email import send_email
+from ..email import send_email, send_email_with_aws
 from .forms import ChangeUsernameForm, LoginForm, RegistrationForm, ChangePasswordForm,\
     PasswordResetRequestForm, PasswordResetForm, ChangeEmailForm
 from ..DynamoAccess import DynamoAccess
@@ -65,9 +65,9 @@ def register():
         
         user_added = dynamo_access.AddUsers(user) 
         token = user.generate_confirmation_token()
-        send_email(user.email, 'Confirm Your Account',
+        send_email_with_aws(user.email, 'CMCC Fantasy Cricket Confirm Your Account',
                    'auth/email/confirm', user=user, token=token)
-        flash('A confirmation email has been sent to you by email.')
+        flash('A confirmation email has been sent to you by email. Make sure to check your Spam folder as well')
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form)
 
