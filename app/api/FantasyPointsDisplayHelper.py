@@ -17,7 +17,11 @@ class FantasyPointsDisplayHelper(object):
         current_time = datetime.utcnow().replace(tzinfo=pytz.utc)
         time_diff_minutes = int((current_time - input_time).total_seconds() / 60)
 
-        if time_diff_minutes > 59: 
+        if time_diff_minutes == 0: 
+            return "Last Updated on less than 1 minute ago"  
+        elif time_diff_minutes == 1: 
+            return "Last Updated on 1 minute ago"  
+        elif time_diff_minutes > 59: 
             return "Last Updated on more than 1 hour ago" 
         else: 
             return f"Last Updated on {time_diff_minutes} minutes ago"
