@@ -1,11 +1,26 @@
-from typing import List, Dict
+from typing import List, Dict 
+from datetime import datetime
+import pytz
 
 ''' 
 used by frontend to create display dataframes 
 '''
 class FantasyPointsDisplayHelper(object): 
     def __init__(self): 
-        pass  
+        pass   
+
+
+    def GetTimeDeltaMessage(self, last_updated_time): 
+
+        input_time_naive = datetime.strptime(last_updated_time, '%Y-%m-%d %H:%M:%S %Z')
+        input_time = pytz.utc.localize(input_time_naive)
+        current_time = datetime.utcnow().replace(tzinfo=pytz.utc)
+        time_diff_minutes = int((current_time - input_time).total_seconds() / 60)
+
+        if time_diff_minutes > 59: 
+            return "Last Updated on more than 1 hour ago" 
+        else: 
+            return f"Last Updated on {time_diff_minutes} minutes ago"
 
     def HideUserIdFromRanking(self, fantasy_ranking): 
         for i in range (len(fantasy_ranking)): 
