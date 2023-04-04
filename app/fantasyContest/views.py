@@ -39,13 +39,13 @@ def displayContestRanking():
 
     ## check if database has rankings updated yet
     fantasy_ranking = dynamo_access.GetFantasyRanking(match_id) 
-    last_updated = dynamo_access.GetLastPointsUpdateTime(match_id)  
-    time_delta_message = display_helper.GetTimeDeltaMessage(last_updated)
 
     if not fantasy_ranking:
         return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
     
     else:  
+        last_updated = dynamo_access.GetLastPointsUpdateTime(match_id)  
+        time_delta_message = display_helper.GetTimeDeltaMessage(last_updated)
         user_selection_tuples=[]  
         user_selection_dict = {}
         for each in fantasy_ranking:                                          
