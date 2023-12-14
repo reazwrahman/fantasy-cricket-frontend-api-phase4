@@ -14,3 +14,8 @@ this will fail.
 go to aws console and add the environment variables manually 
 6) zappa udpate dev 
 this should work. 
+
+
+===== to update code/ deployment ==== 
+1. make sure zappa is installed via pip
+2. run `zappa update dev` 
