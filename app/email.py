@@ -4,7 +4,8 @@ from flask_mail import Message
 import boto3 
 import os 
 import decouple
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError 
+import logging
 
 from . import mail
 
@@ -81,10 +82,11 @@ def send_email_with_aws(to, subject, template, **kwargs):
             # If you are not using a configuration set, comment or delete the
             # following line
             #ConfigurationSetName=CONFIGURATION_SET,
-        )
+        ) 
+        print(f"emails.py::send_email_with_aws successfully sent email to {RECIPIENT}, from {SENDER}, subject: {subject}")
     # Display an error if something goes wrong.	
     except ClientError as e:
-        print(e.response['Error']['Message'])
+        print(f"emails.py::send_email_with_aws FAILED to send email to {RECIPIENT}, from {SENDER}, subject: {subject}, error: {str(e)}")
     else:
         print("Email sent! Message ID:"),
         print(response['MessageId'])

@@ -89,7 +89,7 @@ def confirm(token):
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
-    send_email(current_user.email, 'Confirm Your Account',
+    send_email_with_aws(current_user.email, 'Confirm Your Account',
                'auth/email/confirm', user=current_user, token=token)
     flash('A new confirmation email has been sent to you by email.')
     return redirect(url_for('main.index'))
@@ -120,7 +120,7 @@ def password_reset_request():
         user = dynamo_access.GetUserByEmail(form.email.data.lower())
         if user:
             token = user.generate_reset_token()
-            send_email(user.email, 'Reset Your Password',
+            send_email_with_aws(user.email, 'Reset Your Password',
                        'auth/email/reset_password',
                        user=user, token=token)
         flash('An email with instructions to reset your password has been '
@@ -151,7 +151,7 @@ def change_email_request():
         if current_user.verify_password(form.password.data):
             new_email = form.email.data.lower()
             token = current_user.generate_email_change_token(new_email)
-            send_email(new_email, 'Confirm your email address',
+            send_email_with_aws(new_email, 'Confirm your email address',
                        'auth/email/change_email',
                        user=current_user, token=token)
             flash('An email with instructions to confirm your new email '
