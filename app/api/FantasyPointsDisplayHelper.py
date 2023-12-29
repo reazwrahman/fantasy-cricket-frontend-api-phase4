@@ -44,13 +44,13 @@ class FantasyPointsDisplayHelper(object):
 
 
     def GetSummaryPointsHeader(self): 
-        return ['Name','Batting','Bowling','Fielding','Cap_Vc','Total']  
+        return ['Name','Batting','Bowling','Fielding','Cap/VC','Total']  
 
     def GetBreakdownPointsHeader(self): 
-        return ['Name','base_points', 'milestone_points', 'total_points']
+        return ['Name','Base Points', 'Milestone Points', 'Total Points']
 
     def CreateSummaryPointsDisplay(self, summary_points:Dict, squad_selection:Dict) -> List:  
-        '''['Name','Batting','Bowling','Fielding','Cap_Vc','Total'] '''
+        '''['Name','Batting','Bowling','Fielding','Cap/VC','Total'] '''
 
         selected_squad = squad_selection['selected_squad'] 
         captain_id = squad_selection['captain'] 
@@ -82,7 +82,7 @@ class FantasyPointsDisplayHelper(object):
 
 
     def CreateBreakdownPointsDisplay(self, breakdown_points:Dict, squad_selection:Dict) -> List:  
-        ''' ['Name','base_points', 'milestone_points', 'total_points'] '''
+        ''' ['Name','Batting','Bowling','Fielding','Cap/VC','Total'] '''
         selected_squad = squad_selection['selected_squad'] 
         captain_id = squad_selection['captain'] 
         vc_id = squad_selection['vice_captain']
