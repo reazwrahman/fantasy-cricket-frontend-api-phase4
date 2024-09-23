@@ -42,7 +42,7 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = decouple.config('PROD_DATABASE_URL')
+    #SQLALCHEMY_DATABASE_URI = decouple.config('PROD_DATABASE_URL')
 
     @classmethod
     def init_app(cls, app):
@@ -90,7 +90,6 @@ class HerokuConfig(ProductionConfig):
         app.logger.addHandler(file_handler) 
 
 class AwsConfig(ProductionConfig):
-    
     @classmethod
     def init_app(cls, app):
         ProductionConfig.init_app(app)
