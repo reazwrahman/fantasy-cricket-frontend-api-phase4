@@ -2,9 +2,16 @@
     "dev": {
         "app_function": "application.app",
         "aws_region": "us-east-1",
+        "exclude": [
+            "boto3",
+            "dateutil",
+            "botocore",
+            "s3transfer",
+            "concurrent"
+        ],
         "profile_name": "default",
-        "project_name": "fantasy-cricket-frontend",
-        "runtime": "python3.7",
-        "s3_bucket": "zappa-0gqarffxx"
+        "project_name": "fantasy-contest-api-new",
+        "runtime": "python3.9",
+        "s3_bucket": "zappa-7dq78ffcv"
     }
 }
