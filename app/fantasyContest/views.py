@@ -3,6 +3,7 @@ from flask_login import current_user
 from ast import literal_eval 
 from datetime import datetime, timedelta
 from pytz import timezone 
+from flask import jsonify
 
 from . import fantasyContest
 from .. import db
@@ -30,7 +31,7 @@ def displayActiveGames():
 
     return render_template('fantasyContest/displayActiveGames.html',form=form) 
 
-@fantasyContest.route('/displayContestRanking', methods=['GET', 'POST'])
+@fantasyContest.route('/displayContestRanking', methods=['GET'])
 def displayContestRanking():   
     match_id = request.args['match_id']  
     game_title = dynamo_access.GetGameTitle(match_id) 
@@ -65,12 +66,10 @@ def displayContestRanking():
         if match_result != 'unknown':  
             fantasy_ranking_modified = display_helper.AddMedalsToRanking(fantasy_ranking_modified) 
 
-
-        return render_template('fantasyContest/displayContestRanking.html', game_title=game_title,ranked_contestants=fantasy_ranking_modified,  
-                               last_updated = time_delta_message, form=form)
+        return jsonify(fantasy_ranking_modified)
 
 
-@fantasyContest.route('/displayFullSquadSummary', methods=['GET', 'POST'])
+@fantasyContest.route('/displayFullSquadSummary', methods=['GET'])
 def displayFullSquadSummary():   
     match_id = request.args['match_id'] 
     user_id = request.args['user_id']  
