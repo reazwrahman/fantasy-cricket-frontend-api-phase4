@@ -3,7 +3,8 @@ from flask_login import current_user
 from ast import literal_eval 
 from datetime import datetime, timedelta
 from pytz import timezone 
-from flask import jsonify
+from flask import jsonify 
+import json
 
 from . import fantasyContest
 from .. import db
@@ -41,32 +42,23 @@ def displayContestRanking():
     ## check if database has rankings updated yet
     fantasy_ranking = dynamo_access.GetFantasyRanking(match_id) 
 
-    if not fantasy_ranking:
-        return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=active_contestants) 
+    if not fantasy_ranking: 
+        response = {
+        "status": "error",
+        "message": "No ranking available"
+        }
+        return jsonify(response), 404
     
-    else:  
+    else: 
+        fantasy_ranking:dict = display_helper.convertRankingToDict(fantasy_ranking)  
         last_updated = dynamo_access.GetLastPointsUpdateTime(match_id)  
-        time_delta_message = display_helper.GetTimeDeltaMessage(last_updated)
-        user_selection_tuples=[]  
-        user_selection_dict = {}
-        for each in fantasy_ranking:                                          
-                user_selection_tuples.append((each[-1],each[1])) ##user_id, user_name
-                user_selection_dict[each[-1]] = each[1] # {user_id: user_name}
-
-        form= ActviveContestantsForm() 
-        form.user_selection.choices=user_selection_tuples 
-        if form.validate_on_submit():  
-            user_id = form.user_selection.data    
-            user_name = user_selection_dict[user_id]
-            return redirect (url_for('fantasyContest.displayFullSquadSummary',  
-                                     match_id=match_id, user_id=user_id, 
-                                     user_name = user_name))
-
-        fantasy_ranking_modified = display_helper.HideUserIdFromRanking(fantasy_ranking)
+        time_delta_message = display_helper.GetTimeDeltaMessage(last_updated)  
+        fantasy_ranking["last_updated"] = time_delta_message  
+        print(fantasy_ranking)  
         if match_result != 'unknown':  
-            fantasy_ranking_modified = display_helper.AddMedalsToRanking(fantasy_ranking_modified) 
-
-        return jsonify(fantasy_ranking_modified)
+            fantasy_ranking:dict = display_helper.AddMedalsToRanking(fantasy_ranking)
+         
+        return jsonify(fantasy_ranking)
 
 
 @fantasyContest.route('/displayFullSquadSummary', methods=['GET'])
@@ -89,11 +81,13 @@ def displayFullSquadSummary():
 
 
     if not match_summary_points:
-        return render_template('fantasyContest/waitForScorecardPage.html', active_contestants=[]) 
+        response = {
+        "status": "error",
+        "message": "No ranking available"
+        }
+        return jsonify(response), 404
 
-    
-    form = ViewDetailsForm()     
-
+        
     squad_selection = dynamo_access.GetUserSelectedSquad(match_id, user_id)  
     summary = display_helper.CreateSummaryPointsDisplay(match_summary_points, squad_selection)
     summary_points_display = summary[0] 
@@ -110,12 +104,7 @@ def displayFullSquadSummary():
                 'match_prediction': match_prediction_translated, 
                 'prediction_bonus': prediction_bonus
                 } 
-    if form.validate_on_submit(): 
-        return redirect(url_for('fantasyContest.displayPointsBreakdown', match_id=match_id,  
-                                user_id=user_id, user_name=user_name))
-
-    return render_template("fantasyContest/viewFantasyPointSummary.html", df_display=df_display, 
-                                form=form) 
+    return jsonify(df_display),200
 
 
 
