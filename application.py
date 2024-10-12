@@ -1,4 +1,5 @@
-import os
+import os 
+from flask_cors import CORS
 
 COV = None
 if os.environ.get('FLASK_COVERAGE'):
@@ -13,7 +14,8 @@ from app import create_app, db
 from app.models import User, GameDetails 
 
 app = create_app("aws")
-migrate = Migrate(app, db) 
+migrate = Migrate(app, db)  
+CORS(app)
 
 
 

@@ -109,45 +109,52 @@ def displayFullSquadSummary():
 
 
 @fantasyContest.route('/displayPointsBreakdown', methods=['GET', 'POST'])
-def displayPointsBreakdown():   
-    match_id = request.args['match_id']  
-    user_id = request.args['user_id']
-    user_name = request.args['user_name']   
-    game_title = dynamo_access.GetGameTitle(match_id) 
+def displayPointsBreakdown():    
+    try: 
+        match_id = request.args['match_id']  
+        user_id = request.args['user_id']
+        user_name = request.args['user_name']   
+        game_title = dynamo_access.GetGameTitle(match_id) 
 
-    squad_selection = dynamo_access.GetUserSelectedSquad(match_id, user_id)
+        squad_selection = dynamo_access.GetUserSelectedSquad(match_id, user_id)
 
-    batting_points = dynamo_access.GetMatchBreakdownPoints(match_id, 'batting_points')
-    bowling_points = dynamo_access.GetMatchBreakdownPoints(match_id, 'bowling_points')
-    fielding_points = dynamo_access.GetMatchBreakdownPoints(match_id, 'fielding_points') 
+        batting_points = dynamo_access.GetMatchBreakdownPoints(match_id, 'batting_points')
+        bowling_points = dynamo_access.GetMatchBreakdownPoints(match_id, 'bowling_points')
+        fielding_points = dynamo_access.GetMatchBreakdownPoints(match_id, 'fielding_points') 
 
-    batting_display = display_helper.CreateBreakdownPointsDisplay(batting_points, squad_selection)
-    bowling_display = display_helper.CreateBreakdownPointsDisplay(bowling_points, squad_selection) 
-    fielding_display = display_helper.CreateBreakdownPointsDisplay(fielding_points, squad_selection)
+        batting_display = display_helper.CreateBreakdownPointsDisplay(batting_points, squad_selection)
+        bowling_display = display_helper.CreateBreakdownPointsDisplay(bowling_points, squad_selection) 
+        fielding_display = display_helper.CreateBreakdownPointsDisplay(fielding_points, squad_selection)
 
-    df_display= {   
-                'game_title' : game_title,
-                'user_name': user_name,
-                'batting_display' : {
-                                    'headings' : display_helper.GetBreakdownPointsHeader(), 
-                                    'rows' : batting_display[0], 
-                                    'total_points': batting_display[1]
-                                    },
-                                    
-                'bowling_display' : { 
-                                    'headings' : display_helper.GetBreakdownPointsHeader(), 
-                                    'rows' : bowling_display[0], 
-                                    'total_points': bowling_display[1] 
-                                    },
-                                    
+        df_display= {   
+                    'game_title' : game_title,
+                    'user_name': user_name,
+                    'batting_display' : {
+                                        'headings' : display_helper.GetBreakdownPointsHeader(), 
+                                        'rows' : batting_display[0], 
+                                        'total_points': batting_display[1]
+                                        },
+                                        
+                    'bowling_display' : { 
+                                        'headings' : display_helper.GetBreakdownPointsHeader(), 
+                                        'rows' : bowling_display[0], 
+                                        'total_points': bowling_display[1] 
+                                        },
+                                        
 
-                'fielding_display' : { 
-                                    'headings' : display_helper.GetBreakdownPointsHeader(), 
-                                    'rows' : fielding_display[0], 
-                                    'total_points': fielding_display[1]
-                                    } 
-        
-                } 
+                    'fielding_display' : { 
+                                        'headings' : display_helper.GetBreakdownPointsHeader(), 
+                                        'rows' : fielding_display[0], 
+                                        'total_points': fielding_display[1]
+                                        } 
+            
+                    } 
 
-    return render_template('fantasyContest/fantasyPointsBreakdown.html', df_display=df_display) 
-
+        return jsonify(df_display), 200 
+    
+    except: 
+        response = {
+        "status": "error",
+        "message": "server side error"
+        }
+        return jsonify(response), 500
