@@ -10,6 +10,13 @@ class FantasyPointsDisplayHelper(object):
     def __init__(self): 
         pass   
 
+    def transform_active_games(self, tuples_list:list[tuple]) -> dict:
+        # Transform list of tuples into list of dictionaries
+        transformed_data = [
+            {"id": game_id, "title": title} for game_id, title in tuples_list
+        ]
+        return transformed_data 
+       
     def convertRankingToDict(self, fantasy_data:list) -> dict: 
         rankings = [
             {

@@ -32,6 +32,14 @@ def displayActiveGames():
 
     return render_template('fantasyContest/displayActiveGames.html',form=form) 
 
+@fantasyContest.route('/getActiveGames', methods=['GET'])
+def getActiveGames(): 
+    active_games_list = dynamo_access.GetActiveGamesByIdAndTitle() 
+    active_games = display_helper.transform_active_games(active_games_list)
+    print(active_games)
+
+    return jsonify(active_games), 200
+
 @fantasyContest.route('/displayContestRanking', methods=['GET'])
 def displayContestRanking():   
     match_id = request.args['match_id']  
