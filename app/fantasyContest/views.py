@@ -34,9 +34,8 @@ def displayActiveGames():
 
 @fantasyContest.route('/getActiveGames', methods=['GET'])
 def getActiveGames(): 
-    active_games_list = dynamo_access.GetActiveGamesByIdAndTitle() 
+    active_games_list = dynamo_access.GetActiveGamesByIdTitleImage() 
     active_games = display_helper.transform_active_games(active_games_list)
-    print(active_games)
 
     return jsonify(active_games), 200
 
@@ -61,8 +60,7 @@ def displayContestRanking():
         fantasy_ranking:dict = display_helper.convertRankingToDict(fantasy_ranking)  
         last_updated = dynamo_access.GetLastPointsUpdateTime(match_id)  
         time_delta_message = display_helper.GetTimeDeltaMessage(last_updated)  
-        fantasy_ranking["last_updated"] = time_delta_message  
-        print(fantasy_ranking)  
+        fantasy_ranking["last_updated"] = time_delta_message
         if match_result != 'unknown':  
             fantasy_ranking:dict = display_helper.AddMedalsToRanking(fantasy_ranking)
          
