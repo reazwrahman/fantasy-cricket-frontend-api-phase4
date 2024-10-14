@@ -42,9 +42,11 @@ class DynamoAccess(object):
         json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
         active_games = [] 
         for each in json_list:  
-            entry = [each['match_id'], each['game_title'], ""] 
+            entry = [each['match_id'], each['game_title'], "", ""] 
             if 'image' in each: 
-                entry[2] = each['image']
+                entry[2] = each['image']  
+            if "scorecard_link" in each["scorecard_details"]: 
+                entry[3] = each["scorecard_details"]["scorecard_link"]
             active_games.append(entry)
         
         return active_games  
