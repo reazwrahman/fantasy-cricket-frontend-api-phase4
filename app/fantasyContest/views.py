@@ -47,14 +47,15 @@ def displayContestRanking():
     match_result = dynamo_access.GetMatchResult(match_id)
 
     ## check if database has rankings updated yet
-    fantasy_ranking = dynamo_access.GetFantasyRanking(match_id) 
+    fantasy_ranking = dynamo_access.GetFantasyRanking(match_id)  
 
     if not fantasy_ranking: 
         response = {
-        "status": "error",
-        "message": "No ranking available"
+        "status": "206",
+        "message": "No ranking available", 
+        "data": str(active_contestants)
         }
-        return jsonify(response), 404
+        return jsonify(response), 206
     
     else: 
         fantasy_ranking:dict = display_helper.convertRankingToDict(fantasy_ranking)  
