@@ -53,7 +53,7 @@ def displayContestRanking():
         response = {
         "status": "206",
         "message": "No ranking available", 
-        "data": str(active_contestants)
+        "data": active_contestants
         }
         return jsonify(response), 206
     
