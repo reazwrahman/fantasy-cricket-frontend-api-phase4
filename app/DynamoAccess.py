@@ -437,7 +437,8 @@ class DynamoAccess(object):
             return None 
         else:   
             user_object = User(**json_list[0])
-            return user_object 
+            return user_object  
+    
            
     
            
