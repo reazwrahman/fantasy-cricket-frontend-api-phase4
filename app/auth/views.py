@@ -56,24 +56,6 @@ def unconfirmed():
     return render_template("auth/unconfirmed.html")
 
 
-# @auth.route("/login", methods=["GET", "POST"])
-# def login():
-#     form = LoginForm()
-#     if form.validate_on_submit():
-#         user = dynamo_access.GetUserByEmail(form.email.data.lower())
-#         if user is None:
-#             flash("No user found with this email")
-#         elif not user.verify_password(form.password.data):
-#             flash("Invalid password.")
-#         else:
-#             login_user(user, form.remember_me.data)
-#             next = request.args.get("next")
-#             if next is None or not next.startswith("/"):
-#                 next = url_for("main.index")
-#             return redirect(next)
-#     return render_template("auth/login.html", form=form)
-
-
 @auth.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -83,7 +65,7 @@ def login():
     if not email or not password:
         return jsonify({"message": "Email and password are required"}), 400
 
-    user = dynamo_access.GetUserByEmail(email)
+    user: User = dynamo_access.GetUserByEmail(email)
 
     if user is None:
         return jsonify({"message": "User not found"}), 404
@@ -92,8 +74,17 @@ def login():
         return jsonify({"message": "Invalid email or password"}), 401
 
     else:
-        return jsonify({"message": "Login successful", "token": generate_jwt(email)}), 200
-
+        return (
+            jsonify(
+                {
+                    "message": "Login successful",
+                    "token": generate_jwt(email),
+                    "username": user.username,
+                    "user_id": user.id,
+                }
+            ),
+            200,
+        )
 
 
 @auth.route("/logout")
@@ -194,18 +185,27 @@ def confirm(token):
 
 
 @auth.route("/confirm")
-@login_required
 def resend_confirmation():
-    token = current_user.generate_confirmation_token()
-    send_email_with_aws(
-        current_user.email,
-        "Confirm Your Account",
-        "auth/email/confirm",
-        user=current_user,
-        token=token,
-    )
-    flash("A new confirmation email has been sent to you by email.")
-    return redirect(url_for("main.index"))
+    data = request.get_json()
+    email = data["email"]
+    user_id = data["user_id"]
+    token = request.headers.get("Authorization")
+
+    if token and validate_jwt(token=token, user_email=email):
+        user: User = dynamo_access.GetUserById(user_id)
+        confirmation_token = user.generate_confirmation_token()
+        send_email_with_aws(
+            user.email,
+            "Confirm Your Account",
+            "auth/email/confirm",
+            user=current_user,
+            token=token,
+        )
+        return jsonify({"success": "confirmation email sent"}), 200 
+    
+    else:  
+        return jsonify({"error": "invalid authorization token"}), 403 
+
 
 
 @auth.route("/change-password", methods=["GET", "POST"])
@@ -333,5 +333,22 @@ def generate_jwt(email: str) -> str:
         },
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
-    ) 
+    )
     return token
+
+
+def decode_jwt(token: str) -> str:
+    """returns decoded email"""
+    try:
+        data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
+        decoded_email = data["sub"]
+        return decoded_email
+    except:  ## invalid jwt
+        return None
+
+
+def validate_jwt(token: str, user_email: str) -> bool:
+    decoded_email = decode_jwt(token)
+    if not decoded_email:
+        return False
+    return decoded_email == user_email

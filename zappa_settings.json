@@ -12,6 +12,7 @@
         "profile_name": "default",
         "project_name": "fantasy-contest-api-new",
         "runtime": "python3.9",
-        "s3_bucket": "zappa-7dq78ffcv"
+        "s3_bucket": "zappa-7dq78ffcv", 
+        "slim_handler": true
     }
 }
