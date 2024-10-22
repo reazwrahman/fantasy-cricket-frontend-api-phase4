@@ -3,6 +3,8 @@ from itsdangerous import (
     BadSignature,
     BadTimeSignature,
 )
+import jwt
+import datetime
 from flask import (
     render_template,
     redirect,
@@ -30,6 +32,7 @@ from .forms import (
 from ..DynamoAccess import DynamoAccess
 
 REDIRECT_URL_HOME = "https://cmcc-fantasy-cricket.click"
+REDIRECT_URL_BAD_TOKEN = "https://cmcc-fantasy-cricket.click/bad_token"
 
 dynamo_access = DynamoAccess()
 
@@ -53,22 +56,44 @@ def unconfirmed():
     return render_template("auth/unconfirmed.html")
 
 
-@auth.route("/login", methods=["GET", "POST"])
+# @auth.route("/login", methods=["GET", "POST"])
+# def login():
+#     form = LoginForm()
+#     if form.validate_on_submit():
+#         user = dynamo_access.GetUserByEmail(form.email.data.lower())
+#         if user is None:
+#             flash("No user found with this email")
+#         elif not user.verify_password(form.password.data):
+#             flash("Invalid password.")
+#         else:
+#             login_user(user, form.remember_me.data)
+#             next = request.args.get("next")
+#             if next is None or not next.startswith("/"):
+#                 next = url_for("main.index")
+#             return redirect(next)
+#     return render_template("auth/login.html", form=form)
+
+
+@auth.route("/login", methods=["POST"])
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = dynamo_access.GetUserByEmail(form.email.data.lower())
-        if user is None:
-            flash("No user found with this email")
-        elif not user.verify_password(form.password.data):
-            flash("Invalid password.")
-        else:
-            login_user(user, form.remember_me.data)
-            next = request.args.get("next")
-            if next is None or not next.startswith("/"):
-                next = url_for("main.index")
-            return redirect(next)
-    return render_template("auth/login.html", form=form)
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"message": "Email and password are required"}), 400
+
+    user = dynamo_access.GetUserByEmail(email)
+
+    if user is None:
+        return jsonify({"message": "User not found"}), 404
+
+    elif not user.verify_password(password):
+        return jsonify({"message": "Invalid email or password"}), 401
+
+    else:
+        return jsonify({"message": "Login successful", "token": generate_jwt(email)}), 200
+
 
 
 @auth.route("/logout")
@@ -113,7 +138,6 @@ def register():
     user = User(email=email.lower(), user_name=username, raw_password=password)
 
     try:
-        # Add user to database (DynamoDB in this case)
         user_added = dynamo_access.AddUsers(user)
         if not user_added:
             return jsonify({"error": "Failed to add user"}), 500
@@ -154,21 +178,18 @@ def confirm(token):
     except:
         ## this UI endpoint will show appropriate info to the user
         ## TODO: consider adding this URL as an environment variable for quick changes
-        redirect_url_bad_token = f"{REDIRECT_URL_HOME}/bad_token"
-        return redirect(redirect_url_bad_token)
+        return redirect(REDIRECT_URL_BAD_TOKEN)
 
     user_exists: bool = dynamo_access.GetUserById(user_id) != None
 
     if not user_exists:
-        return "user doesnt exist"
+        return redirect(REDIRECT_URL_BAD_TOKEN)
 
-    if dynamo_access.GetUserConfirmationStatus(user_id):
-        # return "already confirmed"
+    if dynamo_access.GetUserConfirmationStatus(user_id):  # already confirmed
         return redirect(REDIRECT_URL_HOME)
 
-    if dynamo_access.GetUserById(user_id) != None:
+    else:
         dynamo_access.UpdateUserConfirmation(user_id)
-        # return "confirmation updated!"
         return redirect(REDIRECT_URL_HOME)
 
 
@@ -300,3 +321,17 @@ def decode_token(token: str) -> str:
     s = Serializer(secret_key, expiration)
     data = s.loads(token)
     return data["confirm"]
+
+
+def generate_jwt(email: str) -> str:
+    token = jwt.encode(
+        {
+            "sub": email,  # Subject of the token (user's email)
+            "iat": datetime.datetime.now(datetime.timezone.utc),  # Issued at time
+            "exp": datetime.datetime.now(datetime.timezone.utc)
+            + datetime.timedelta(hours=1),  # Token expiration time (1 hour)
+        },
+        current_app.config["SECRET_KEY"],
+        algorithm="HS256",
+    ) 
+    return token
