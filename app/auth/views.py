@@ -31,7 +31,7 @@ from .forms import (
 
 from ..DynamoAccess import DynamoAccess
 
-REDIRECT_URL_HOME = "https://cmcc-fantasy-cricket.click"
+REDIRECT_URL_HOME = "http://localhost:4200/auth/login"
 REDIRECT_URL_BAD_TOKEN = "https://cmcc-fantasy-cricket.click/bad_token"
 
 dynamo_access = DynamoAccess()
@@ -68,10 +68,10 @@ def login():
     user: User = dynamo_access.GetUserByEmail(email)
 
     if user is None:
-        return jsonify({"message": "User not found"}), 404
+        return jsonify({"message": "Couldn't find your account"}), 404
 
     elif not user.verify_password(password):
-        return jsonify({"message": "Invalid email or password"}), 401
+        return jsonify({"message": "The password you’ve entered is incorrect"}), 401
 
     else:
         return (
@@ -81,6 +81,7 @@ def login():
                     "token": generate_jwt(email),
                     "username": user.username,
                     "user_id": user.id,
+                    "confirmed": user.confirmed
                 }
             ),
             200,
@@ -163,10 +164,13 @@ def register():
 
 
 @auth.route("/confirm/<token>")
-def confirm(token):
+def confirm(token): 
+    print(f'foken = {token}')
     try:
-        user_id: str = decode_token(token)
-    except:
+        user_id: str = decode_token(token) 
+        print(f'user id = {user_id}')
+    except: 
+        print('user not found')
         ## this UI endpoint will show appropriate info to the user
         ## TODO: consider adding this URL as an environment variable for quick changes
         return redirect(REDIRECT_URL_BAD_TOKEN)
@@ -184,7 +188,7 @@ def confirm(token):
         return redirect(REDIRECT_URL_HOME)
 
 
-@auth.route("/confirm")
+@auth.route("/confirm", methods=["POST"])
 def resend_confirmation():
     data = request.get_json()
     email = data["email"]
@@ -198,8 +202,8 @@ def resend_confirmation():
             user.email,
             "Confirm Your Account",
             "auth/email/confirm",
-            user=current_user,
-            token=token,
+            user=user,
+            token=confirmation_token,
         )
         return jsonify({"success": "confirmation email sent"}), 200 
     
