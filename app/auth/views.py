@@ -27,26 +27,15 @@ from .forms import (
     PasswordResetRequestForm,
     PasswordResetForm,
     ChangeEmailForm,
-)
+) 
+import decouple
 
 from ..DynamoAccess import DynamoAccess
 
-REDIRECT_URL_HOME = "http://localhost:4200/auth/login"
-REDIRECT_URL_BAD_TOKEN = "https://cmcc-fantasy-cricket.click/bad_token"
+REDIRECT_URL_HOME = f'{decouple.config("HOST")}/auth/login'
+REDIRECT_URL_BAD_TOKEN = f'{decouple.config("HOST")}/bad_token'
 
 dynamo_access = DynamoAccess()
-
-
-@auth.before_app_request
-def before_request():
-    if current_user.is_authenticated:
-        if (
-            not current_user.confirmed
-            and request.endpoint
-            and request.blueprint != "auth"
-            and request.endpoint != "static"
-        ):
-            return redirect(url_for("auth.unconfirmed"))
 
 
 @auth.route("/unconfirmed")
@@ -86,14 +75,6 @@ def login():
             ),
             200,
         )
-
-
-@auth.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    flash("You have been logged out.")
-    return redirect(url_for("main.index"))
 
 
 @auth.route("/register", methods=["POST"])
@@ -163,16 +144,13 @@ def register():
         return jsonify({"error": "Registration failed, please try again"}), 500
 
 
-@auth.route("/confirm/<token>")
+@auth.route("/confirm/<token>", methods=["GET"])
 def confirm(token): 
     print(f'foken = {token}')
     try:
         user_id: str = decode_token(token) 
         print(f'user id = {user_id}')
-    except: 
-        print('user not found')
-        ## this UI endpoint will show appropriate info to the user
-        ## TODO: consider adding this URL as an environment variable for quick changes
+    except:
         return redirect(REDIRECT_URL_BAD_TOKEN)
 
     user_exists: bool = dynamo_access.GetUserById(user_id) != None
