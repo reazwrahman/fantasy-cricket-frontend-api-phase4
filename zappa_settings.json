@@ -12,7 +12,8 @@
         "profile_name": "default",
         "project_name": "fantasy-contest-api-new",
         "runtime": "python3.9",
-        "s3_bucket": "zappa-7dq78ffcv", 
-        "slim_handler": true
+        "s3_bucket": "zappa-7dq78ffcv",
+        "slim_handler": true,
+        "role_arn": "arn:aws:iam::656687415169:role/fantasy-contest-api-new-dev-ZappaLambdaExecutionRole"
     }
 }
