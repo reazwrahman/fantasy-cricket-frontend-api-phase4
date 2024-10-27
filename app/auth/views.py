@@ -234,10 +234,12 @@ def password_reset_request():
         return jsonify({"error": "Couldn't find your account"}), 404
 
 
-@auth.route("/reset/<token>", methods=["GET", "POST"])
-def password_reset(token): 
-    data = request.get_json()
-    if not data or "new_password" not in data:
+@auth.route("/resetWithToken", methods=["GET", "POST"])
+def password_reset(): 
+    data = request.get_json() 
+    token = data.get("token") 
+
+    if not data or not token or "new_password" not in data:  
         return jsonify({"error": "Bad Reqeust"}), 400 
     
     if User.reset_password(token, data.get("new_password")):  
