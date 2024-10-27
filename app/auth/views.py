@@ -27,12 +27,13 @@ from .forms import (
     PasswordResetRequestForm,
     PasswordResetForm,
     ChangeEmailForm,
-) 
+)
 import decouple
 
 from ..DynamoAccess import DynamoAccess
 
-REDIRECT_URL_HOME = f'{decouple.config("HOST")}/auth/login'
+REDIRECT_URL_HOME = f'{decouple.config("HOST")}/auth/login' 
+REDIRECT_URL_RESET = f'{decouple.config("HOST")}/auth/reset' 
 REDIRECT_URL_BAD_TOKEN = f'{decouple.config("HOST")}/bad_token'
 
 dynamo_access = DynamoAccess()
@@ -70,7 +71,7 @@ def login():
                     "token": generate_jwt(email),
                     "username": user.username,
                     "user_id": user.id,
-                    "confirmed": user.confirmed
+                    "confirmed": user.confirmed,
                 }
             ),
             200,
@@ -145,11 +146,11 @@ def register():
 
 
 @auth.route("/confirm/<token>", methods=["GET"])
-def confirm(token): 
-    print(f'foken = {token}')
+def confirm(token):
+    print(f"foken = {token}")
     try:
-        user_id: str = decode_token(token) 
-        print(f'user id = {user_id}')
+        user_id: str = decode_token(token)
+        print(f"user id = {user_id}")
     except:
         return redirect(REDIRECT_URL_BAD_TOKEN)
 
@@ -183,67 +184,66 @@ def resend_confirmation():
             user=user,
             token=confirmation_token,
         )
-        return jsonify({"success": "confirmation email sent"}), 200 
-    
-    else:  
-        return jsonify({"error": "invalid authorization token"}), 403 
+        return jsonify({"success": "confirmation email sent"}), 200
+
+    else:
+        return jsonify({"error": "invalid authorization token"}), 403
 
 
+# @auth.route("/change-password", methods=["GET", "POST"])
+# @login_required
+# def change_password():
+#     form = ChangePasswordForm()
+#     if form.validate_on_submit():
+#         if current_user.verify_password(form.old_password.data):
+#             current_user.password_hash = current_user.encrypt_password(
+#                 form.password.data
+#             )
+#             dynamo_access.UpdateUserPassword(
+#                 current_user.id, current_user.password_hash
+#             )
+#             flash("Your password has been updated.")
+#             return redirect(url_for("main.index"))
+#         else:
+#             flash("Invalid password.")
+#     return render_template("auth/change_password.html", form=form)
 
-@auth.route("/change-password", methods=["GET", "POST"])
-@login_required
-def change_password():
-    form = ChangePasswordForm()
-    if form.validate_on_submit():
-        if current_user.verify_password(form.old_password.data):
-            current_user.password_hash = current_user.encrypt_password(
-                form.password.data
-            )
-            dynamo_access.UpdateUserPassword(
-                current_user.id, current_user.password_hash
-            )
-            flash("Your password has been updated.")
-            return redirect(url_for("main.index"))
-        else:
-            flash("Invalid password.")
-    return render_template("auth/change_password.html", form=form)
 
-
-@auth.route("/reset", methods=["GET", "POST"])
+@auth.route("/reset", methods=["POST"])
 def password_reset_request():
-    if not current_user.is_anonymous:
-        return redirect(url_for("main.index"))
-    form = PasswordResetRequestForm()
-    if form.validate_on_submit():
-        user = dynamo_access.GetUserByEmail(form.email.data.lower())
-        if user:
-            token = user.generate_reset_token()
-            send_email_with_aws(
-                user.email,
-                "Reset Your Password",
-                "auth/email/reset_password",
-                user=user,
-                token=token,
-            )
-        flash(
-            "An email with instructions to reset your password has been " "sent to you."
+    data = request.get_json()
+    if not data or "email" not in data:
+        return jsonify({"error": "Bad Reqeust"}), 400
+
+    email: str = data.get("email")
+
+    user = dynamo_access.GetUserByEmail(email.lower())
+    if user:
+        token = user.generate_reset_token()
+        send_email_with_aws(
+            user.email,
+            "Reset Your Password",
+            "auth/email/reset_password",
+            user=user,
+            token=token, 
+            link = REDIRECT_URL_RESET
         )
-        return redirect(url_for("auth.login"))
-    return render_template("auth/reset_password.html", form=form)
+
+        return jsonify({"success": "Email sent with reset instruction"}), 200
+    else:
+        return jsonify({"error": "Couldn't find your account"}), 404
 
 
 @auth.route("/reset/<token>", methods=["GET", "POST"])
-def password_reset(token):
-    if not current_user.is_anonymous:
-        return redirect(url_for("main.index"))
-    form = PasswordResetForm()
-    if form.validate_on_submit():
-        if User.reset_password(token, form.password.data):
-            flash("Your password has been updated.")
-            return redirect(url_for("auth.login"))
-        else:
-            return redirect(url_for("main.index"))
-    return render_template("auth/reset_password.html", form=form)
+def password_reset(token): 
+    data = request.get_json()
+    if not data or "new_password" not in data:
+        return jsonify({"error": "Bad Reqeust"}), 400 
+    
+    if User.reset_password(token, data.get("new_password")):  
+        return jsonify({"success": "Password is updated!"}), 200 
+    else: 
+        return jsonify({"error": "Invalid token"}), 498
 
 
 @auth.route("/change_email", methods=["GET", "POST"])

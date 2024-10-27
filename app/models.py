@@ -87,6 +87,7 @@ class User(UserMixin):
          ## has to be imported here to avoid circular dependencies
         from app.DynamoAccess import DynamoAccess 
         dynamo_access = DynamoAccess()
+        
         user = dynamo_access.GetUserById(data.get('reset'))
         if user is None:
             return False
