@@ -19,5 +19,3 @@ this should work.
 ===== to update code/ deployment ==== 
 1. make sure zappa is installed via pip
 2. run `zappa update dev` 
-3. manually update the IAM Policy in AWS to include SES:sendEmail action
-(TODO: come up with an automated way for this step) 
