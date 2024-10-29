@@ -4,6 +4,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
+    RUNNING_ENV = decouple.config('RUNNING_ENV')
     SECRET_KEY = decouple.config('SECRET_KEY')
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))

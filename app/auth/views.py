@@ -234,7 +234,7 @@ def password_reset_request():
         return jsonify({"error": "Couldn't find your account"}), 404
 
 
-@auth.route("/resetWithToken", methods=["GET", "POST"])
+@auth.route("/resetWithToken", methods=["POST"])
 def password_reset(): 
     data = request.get_json() 
     token = data.get("token") 
@@ -248,29 +248,29 @@ def password_reset():
         return jsonify({"error": "Invalid token"}), 498
 
 
-@auth.route("/change_email", methods=["GET", "POST"])
-@login_required
-def change_email_request():
-    form = ChangeEmailForm()
-    if form.validate_on_submit():
-        if current_user.verify_password(form.password.data):
-            new_email = form.email.data.lower()
-            token = current_user.generate_email_change_token(new_email)
-            send_email_with_aws(
-                new_email,
-                "Confirm your email address",
-                "auth/email/change_email",
-                user=current_user,
-                token=token,
-            )
-            flash(
-                "An email with instructions to confirm your new email "
-                "address has been sent to you."
-            )
-            return redirect(url_for("main.index"))
-        else:
-            flash("Invalid email or password.")
-    return render_template("auth/change_email.html", form=form)
+# @auth.route("/change_email", methods=["GET", "POST"])
+# @login_required
+# def change_email_request():
+#     form = ChangeEmailForm()
+#     if form.validate_on_submit():
+#         if current_user.verify_password(form.password.data):
+#             new_email = form.email.data.lower()
+#             token = current_user.generate_email_change_token(new_email)
+#             send_email_with_aws(
+#                 new_email,
+#                 "Confirm your email address",
+#                 "auth/email/change_email",
+#                 user=current_user,
+#                 token=token,
+#             )
+#             flash(
+#                 "An email with instructions to confirm your new email "
+#                 "address has been sent to you."
+#             )
+#             return redirect(url_for("main.index"))
+#         else:
+#             flash("Invalid email or password.")
+#     return render_template("auth/change_email.html", form=form)
 
 
 @auth.route("/change_email/<token>")
@@ -283,19 +283,19 @@ def change_email(token):
     return redirect(url_for("main.index"))
 
 
-@auth.route("/change_username", methods=["GET", "POST"])
-@login_required
-def change_username():
-    form = ChangeUsernameForm()
-    if form.validate_on_submit():
-        if current_user.verify_password(form.password.data):
-            current_user.username = form.new_username.data
-            dynamo_access.UpdateUsername(current_user.id, current_user.username)
-            flash("Your username has been updated")
-            return redirect(url_for("main.index"))
-        else:
-            flash("Invalid password.")
-    return render_template("auth/change_username.html", form=form)
+# @auth.route("/change_username", methods=["GET", "POST"])
+# @login_required
+# def change_username():
+#     form = ChangeUsernameForm()
+#     if form.validate_on_submit():
+#         if current_user.verify_password(form.password.data):
+#             current_user.username = form.new_username.data
+#             dynamo_access.UpdateUsername(current_user.id, current_user.username)
+#             flash("Your username has been updated")
+#             return redirect(url_for("main.index"))
+#         else:
+#             flash("Invalid password.")
+#     return render_template("auth/change_username.html", form=form)
 
 
 ###################  Helper Methods ###############################
@@ -326,13 +326,11 @@ def decode_jwt(token: str) -> str:
     try:
         data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
         decoded_email = data["sub"]
-        return decoded_email
+        return data["sub"]
     except:  ## invalid jwt
         return None
 
 
 def validate_jwt(token: str, user_email: str) -> bool:
     decoded_email = decode_jwt(token)
-    if not decoded_email:
-        return False
-    return decoded_email == user_email
+    return decoded_email is not None and decoded_email == user_email

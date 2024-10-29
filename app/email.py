@@ -83,9 +83,10 @@ def send_email_with_aws(to, subject, template, **kwargs):
             # following line
             #ConfigurationSetName=CONFIGURATION_SET,
         ) 
-        print(f"emails.py::send_email_with_aws successfully sent email to {RECIPIENT}, from {SENDER}, subject: {subject}")
+        print(f"emails.py::send_email_with_aws successfully sent email to {RECIPIENT}, from {SENDER}, subject: {subject}") 
+        print(response)
     # Display an error if something goes wrong.	
-    except ClientError as e:
+    except Exception as e:
         print(f"emails.py::send_email_with_aws FAILED to send email to {RECIPIENT}, from {SENDER}, subject: {subject}, error: {str(e)}")
     else:
         print("Email sent! Message ID:"),
