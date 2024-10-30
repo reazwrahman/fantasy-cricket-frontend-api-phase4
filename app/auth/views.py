@@ -30,14 +30,15 @@ from .forms import (
 )
 import decouple
 
-from ..DynamoAccess import DynamoAccess
+from app.DynamoAccess import DynamoAccess 
+from app.api.AuthHelper import AuthHelper
 
 REDIRECT_URL_HOME = f'{decouple.config("HOST")}/auth/login' 
 REDIRECT_URL_RESET = f'{decouple.config("HOST")}/auth/reset' 
 REDIRECT_URL_BAD_TOKEN = f'{decouple.config("HOST")}/bad_token'
 
-dynamo_access = DynamoAccess()
-
+dynamo_access = DynamoAccess() 
+auth_helper = AuthHelper()
 
 @auth.route("/unconfirmed")
 def unconfirmed():
@@ -68,7 +69,7 @@ def login():
             jsonify(
                 {
                     "message": "Login successful",
-                    "token": generate_jwt(email),
+                    "token": auth_helper.generate_jwt(email),
                     "username": user.username,
                     "user_id": user.id,
                     "confirmed": user.confirmed,
@@ -149,7 +150,7 @@ def register():
 def confirm(token):
     print(f"foken = {token}")
     try:
-        user_id: str = decode_token(token)
+        user_id: str = auth_helper.decode_confirmation_token(token)
         print(f"user id = {user_id}")
     except:
         return redirect(REDIRECT_URL_BAD_TOKEN)
@@ -174,7 +175,7 @@ def resend_confirmation():
     user_id = data["user_id"]
     token = request.headers.get("Authorization")
 
-    if token and validate_jwt(token=token, user_email=email):
+    if token and auth_helper.validate_jwt(token=token, user_email=email):
         user: User = dynamo_access.GetUserById(user_id)
         confirmation_token = user.generate_confirmation_token()
         send_email_with_aws(
@@ -296,41 +297,3 @@ def change_email(token):
 #         else:
 #             flash("Invalid password.")
 #     return render_template("auth/change_username.html", form=form)
-
-
-###################  Helper Methods ###############################
-def decode_token(token: str) -> str:
-    secret_key = current_app.config["SECRET_KEY"]
-    expiration = 3600
-    s = Serializer(secret_key, expiration)
-    data = s.loads(token)
-    return data["confirm"]
-
-
-def generate_jwt(email: str) -> str:
-    token = jwt.encode(
-        {
-            "sub": email,  # Subject of the token (user's email)
-            "iat": datetime.datetime.now(datetime.timezone.utc),  # Issued at time
-            "exp": datetime.datetime.now(datetime.timezone.utc)
-            + datetime.timedelta(hours=1),  # Token expiration time (1 hour)
-        },
-        current_app.config["SECRET_KEY"],
-        algorithm="HS256",
-    )
-    return token
-
-
-def decode_jwt(token: str) -> str:
-    """returns decoded email"""
-    try:
-        data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
-        decoded_email = data["sub"]
-        return data["sub"]
-    except:  ## invalid jwt
-        return None
-
-
-def validate_jwt(token: str, user_email: str) -> bool:
-    decoded_email = decode_jwt(token)
-    return decoded_email is not None and decoded_email == user_email
