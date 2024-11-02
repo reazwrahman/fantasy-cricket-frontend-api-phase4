@@ -14,7 +14,7 @@ from flask import (
     jsonify,
     current_app,
 )
-from flask_login import login_user, logout_user, login_required, current_user
+from flask_login import login_user, logout_user, login_required
 from . import auth
 from .. import db
 from ..models import User
@@ -30,15 +30,16 @@ from .forms import (
 )
 import decouple
 
-from app.DynamoAccess import DynamoAccess 
+from app.DynamoAccess import DynamoAccess
 from app.api.AuthHelper import AuthHelper
 
-REDIRECT_URL_HOME = f'{decouple.config("HOST")}/auth/login' 
-REDIRECT_URL_RESET = f'{decouple.config("HOST")}/auth/reset' 
+REDIRECT_URL_HOME = f'{decouple.config("HOST")}/auth/login'
+REDIRECT_URL_RESET = f'{decouple.config("HOST")}/auth/reset'
 REDIRECT_URL_BAD_TOKEN = f'{decouple.config("HOST")}/bad_token'
 
-dynamo_access = DynamoAccess() 
+dynamo_access = DynamoAccess()
 auth_helper = AuthHelper()
+
 
 @auth.route("/unconfirmed")
 def unconfirmed():
@@ -191,23 +192,31 @@ def resend_confirmation():
         return jsonify({"error": "invalid authorization token"}), 403
 
 
-# @auth.route("/change-password", methods=["GET", "POST"])
-# @login_required
-# def change_password():
-#     form = ChangePasswordForm()
-#     if form.validate_on_submit():
-#         if current_user.verify_password(form.old_password.data):
-#             current_user.password_hash = current_user.encrypt_password(
-#                 form.password.data
-#             )
-#             dynamo_access.UpdateUserPassword(
-#                 current_user.id, current_user.password_hash
-#             )
-#             flash("Your password has been updated.")
-#             return redirect(url_for("main.index"))
-#         else:
-#             flash("Invalid password.")
-#     return render_template("auth/change_password.html", form=form)
+@auth.route("/changePassword", methods=["POST"])
+def change_password():
+    data = request.get_json()
+    token = request.headers.get("Authorization")
+
+    if (
+        not data
+        or "new_password" not in data
+        or "old_password" not in data
+        or "email" not in data
+        or "user_id" not in data
+    ):
+        return jsonify({"error": "Bad Reqeust"}), 400
+
+    if token and auth_helper.validate_jwt(token=token, user_email=data.get("email")):
+        user: User = dynamo_access.GetUserById(user_id=data.get("user_id"))
+        if user and user.verify_password(data.get("old_password")):
+            user.password_hash = user.encrypt_password(data.get("new_password"))
+            dynamo_access.UpdateUserPassword(user.id, user.password_hash)
+            return jsonify({"success": "Password is updated!"}), 200
+        else:
+            return jsonify({"error": "Wrong old password"}), 403
+
+    else:
+        return jsonify({"error": "invalid authorization token"}), 403
 
 
 @auth.route("/reset", methods=["POST"])
@@ -226,8 +235,8 @@ def password_reset_request():
             "Reset Your Password",
             "auth/email/reset_password",
             user=user,
-            token=token, 
-            link = REDIRECT_URL_RESET
+            token=token,
+            link=REDIRECT_URL_RESET,
         )
 
         return jsonify({"success": "Email sent with reset instruction"}), 200
@@ -236,64 +245,49 @@ def password_reset_request():
 
 
 @auth.route("/resetWithToken", methods=["POST"])
-def password_reset(): 
-    data = request.get_json() 
-    token = data.get("token") 
+def password_reset():
+    data = request.get_json()
+    token = data.get("token")
 
-    if not data or not token or "new_password" not in data:  
-        return jsonify({"error": "Bad Reqeust"}), 400 
-    
-    if User.reset_password(token, data.get("new_password")):  
-        return jsonify({"success": "Password is updated!"}), 200 
-    else: 
+    if not data or not token or "new_password" not in data:
+        return jsonify({"error": "Bad Reqeust"}), 400
+
+    if User.reset_password(token, data.get("new_password")):
+        return jsonify({"success": "Password is updated!"}), 200
+    else:
         return jsonify({"error": "Invalid token"}), 498
 
 
-# @auth.route("/change_email", methods=["GET", "POST"])
-# @login_required
-# def change_email_request():
-#     form = ChangeEmailForm()
-#     if form.validate_on_submit():
-#         if current_user.verify_password(form.password.data):
-#             new_email = form.email.data.lower()
-#             token = current_user.generate_email_change_token(new_email)
-#             send_email_with_aws(
-#                 new_email,
-#                 "Confirm your email address",
-#                 "auth/email/change_email",
-#                 user=current_user,
-#                 token=token,
-#             )
-#             flash(
-#                 "An email with instructions to confirm your new email "
-#                 "address has been sent to you."
-#             )
-#             return redirect(url_for("main.index"))
-#         else:
-#             flash("Invalid email or password.")
-#     return render_template("auth/change_email.html", form=form)
+@auth.route("/changeUsername", methods=["POST"])
+def change_email_request():
+    data = request.get_json()
+    token = request.headers.get("Authorization")
+    if (
+        not data
+        or "password" not in data
+        or "new_username" not in data
+        or "user_id" not in data
+    ):
+        print('something is missing')
+        return jsonify({"error": "Bad Reqeust"}), 400
 
+    if token and auth_helper.validate_jwt(token=token, user_email=data.get("email")):
+        user: User = dynamo_access.GetUserById(user_id=data.get("user_id"))
+        if user and user.verify_password(data.get("password")):
+            user.username = data.get("new_username")
+            dynamo_access.UpdateUsername(user.id, user.username)
+            return (
+                jsonify(
+                    {
+                        "success": "Username is updated! This new username will be used for future fantasy contests"
+                    }
+                ),
+                200,
+            )
 
-@auth.route("/change_email/<token>")
-@login_required
-def change_email(token):
-    if current_user.change_email(token):
-        flash("Your email address has been updated.")
+        else:
+            return jsonify({"error": "Wrong Password"}), 400
+
     else:
-        flash("Invalid request.")
-    return redirect(url_for("main.index"))
+        return jsonify({"error": "invalid authorization token"}), 403
 
-
-# @auth.route("/change_username", methods=["GET", "POST"])
-# @login_required
-# def change_username():
-#     form = ChangeUsernameForm()
-#     if form.validate_on_submit():
-#         if current_user.verify_password(form.password.data):
-#             current_user.username = form.new_username.data
-#             dynamo_access.UpdateUsername(current_user.id, current_user.username)
-#             flash("Your username has been updated")
-#             return redirect(url_for("main.index"))
-#         else:
-#             flash("Invalid password.")
-#     return render_template("auth/change_username.html", form=form)
