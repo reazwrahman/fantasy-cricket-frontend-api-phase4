@@ -42,7 +42,7 @@ class SquadOperators(object):
         
         return secondary_dict 
 
-    def GetPlayerNamesFromDict(self, player_dict) ->List[str] : 
+    def GetPlayerNamesFromDict(self, player_dict) ->List[str] :
         names = [] 
         for each in player_dict: 
             names.append(player_dict[each]['Name']) 

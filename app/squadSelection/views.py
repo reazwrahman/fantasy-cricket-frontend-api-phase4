@@ -40,23 +40,22 @@ def getFullMatchSquad():
 
     ## prepare batters and batting allrounders
     batters_dict= squad_operator.GetAllBatters()
-    batter_names = squad_operator.GetPlayerNamesFromDict(batters_dict)
-    reversed_dict = squad_operator.GetReversedDict(batters_dict)
-    batter_names_with_playing_xi_tag = squad_operator.AttachPlayingXiTagToNames(batter_names, match_squad) 
+    # batter_names = squad_operator.GetPlayerNamesFromDict(batters_dict)
+    # reversed_dict = squad_operator.GetReversedDict(batters_dict)
+    # batter_names_with_playing_xi_tag = squad_operator.AttachPlayingXiTagToNames(batter_names, match_squad) 
 
     ## prepare bowlers, bowling allrounders
     bowlers_dict= squad_operator.GetNonOverlappingPlayers(batters_dict)
-    bowler_names = squad_operator.GetPlayerNamesFromDict(bowlers_dict)
-    reversed_dict = squad_operator.GetReversedDict(bowlers_dict)
-    bowler_names_with_playing_xi_tag = squad_operator.AttachPlayingXiTagToNames(bowler_names, match_squad)
+    # bowler_names = squad_operator.GetPlayerNamesFromDict(bowlers_dict)
+    # reversed_dict = squad_operator.GetReversedDict(bowlers_dict)
+    # bowler_names_with_playing_xi_tag = squad_operator.AttachPlayingXiTagToNames(bowler_names, match_squad)
 
-    ## create a form with possible batters choices
-    formForBatters = PlayerSelectionFormFactory.BuildSimpleForm(batter_names_with_playing_xi_tag)
+
 
     full_squad = {   
                 'start_time': game_start_time, 
-                'batters' : batter_names_with_playing_xi_tag, 
-                'bowlers' : bowler_names_with_playing_xi_tag
+                'batters' : __transform_players_dict(batters_dict), 
+                'bowlers' : __transform_players_dict(bowlers_dict)
                 } 
 
     return jsonify(full_squad), 200 
@@ -121,6 +120,16 @@ def __convert_to_milliseconds(time:str):
     # Get the milliseconds timestamp
     milliseconds_timestamp = int(timestamp.timestamp() * 1000)
 
-    return milliseconds_timestamp
+    return milliseconds_timestamp 
+
+def __transform_players_dict(players_dict:dict):  
+    result:list[dict] = []
+    for each in players_dict: 
+        new_dict:dict = dict() 
+        new_dict["id"] = each 
+        new_dict.update(players_dict[each]) 
+        result.append(new_dict) 
+    
+    return result
 
 
