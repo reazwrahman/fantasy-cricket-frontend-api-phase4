@@ -13,7 +13,8 @@ class FantasyPointsDisplayHelper(object):
     def transform_active_games(self, entries:list[list]) -> dict:
         # Transform list of lists into list of dictionaries
         transformed_data = [
-            {"id": game_id, "title": title, "image": image, "scorecard":scorecard} for game_id, title, image, scorecard in entries
+            {"id": game_id, "title": title, "image": image, "scorecard":scorecard, "squad_link":squad_link} 
+                for game_id, title, image, scorecard, squad_link in entries
         ]
         return transformed_data 
        
