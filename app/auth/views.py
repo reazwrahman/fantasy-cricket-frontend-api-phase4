@@ -19,15 +19,6 @@ from . import auth
 from .. import db
 from ..models import User
 from ..email import send_email, send_email_with_aws
-from .forms import (
-    ChangeUsernameForm,
-    LoginForm,
-    RegistrationForm,
-    ChangePasswordForm,
-    PasswordResetRequestForm,
-    PasswordResetForm,
-    ChangeEmailForm,
-)
 import decouple
 
 from app.DynamoAccess import DynamoAccess

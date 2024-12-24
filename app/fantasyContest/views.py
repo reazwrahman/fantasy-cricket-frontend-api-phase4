@@ -9,7 +9,6 @@ import json
 from . import fantasyContest
 from .. import db
 from ..models import GameDetails, User 
-from .forms import ActviveContestantsForm, ActiveGamesForm, ViewDetailsForm
 
 from ..api.FantasyPointsDisplayHelper import FantasyPointsDisplayHelper 
 from ..api.MatchPredictionHelper import MatchPredictionHelper

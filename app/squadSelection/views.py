@@ -4,19 +4,12 @@ from flask_login import current_user, login_required
 from ast import literal_eval
 from datetime import datetime, timedelta
 from pytz import timezone 
-from ast import literal_eval
+from ast import literal_eval 
+from typing import List, Dict
 
 from . import squadSelection
 from .. import db
 from ..models import GameDetails
-from .forms import (
-    ActiveGamesForm,
-    PlayerSelectionFormFactory,
-    FinalizeSquadForm,
-    ContinueButton,
-    Cap_Vc_SelectionForm,
-)
-
 from ..models import User
 from ..DynamoAccess import DynamoAccess
 from app.api.SquadGenerator.SquadOperators import SquadOperators
@@ -38,24 +31,18 @@ def getFullMatchSquad():
     game_start_time:str = __convert_to_milliseconds(dynamo_access.GetGameStartTime(selected_match_id))
     squad_operator = SquadOperators(match_squad) 
 
-    ## prepare batters and batting allrounders
     batters_dict= squad_operator.GetAllBatters()
-    # batter_names = squad_operator.GetPlayerNamesFromDict(batters_dict)
-    # reversed_dict = squad_operator.GetReversedDict(batters_dict)
-    # batter_names_with_playing_xi_tag = squad_operator.AttachPlayingXiTagToNames(batter_names, match_squad) 
-
-    ## prepare bowlers, bowling allrounders
     bowlers_dict= squad_operator.GetNonOverlappingPlayers(batters_dict)
-    # bowler_names = squad_operator.GetPlayerNamesFromDict(bowlers_dict)
-    # reversed_dict = squad_operator.GetReversedDict(bowlers_dict)
-    # bowler_names_with_playing_xi_tag = squad_operator.AttachPlayingXiTagToNames(bowler_names, match_squad)
 
-
+    match_prediction_helper = MatchPredictionHelper(selected_match_id)
+    match_predictions:List[Dict[str, str]] = match_prediction_helper.GetAllOptions()
+    
 
     full_squad = {   
                 'start_time': game_start_time, 
                 'batters' : __transform_players_dict(batters_dict), 
-                'bowlers' : __transform_players_dict(bowlers_dict)
+                'bowlers' : __transform_players_dict(bowlers_dict), 
+                'predictions': match_predictions
                 } 
 
     return jsonify(full_squad), 200 

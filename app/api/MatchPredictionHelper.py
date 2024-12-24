@@ -1,3 +1,4 @@
+from typing import List, Dict
 from ..DynamoAccess import DynamoAccess 
 
 class MatchPredictionHelper(object): 
@@ -7,11 +8,11 @@ class MatchPredictionHelper(object):
         self.teams = self.dynamo_access.GetTeamNames(self.match_id) 
         self.options_dict = None
     
-    def GetAllOptions(self): 
+    def GetAllOptions(self) -> List[Dict[str,str]]: 
         options = []
-        options.append (('team1',self.teams[0]+' will win'))  
-        options.append (('team2',self.teams[1]+' will win')) 
-        options.append(('draw', 'draw/tie'))  
+        options.append ({'team1':self.teams[0]+' will win'})  
+        options.append ({'team2':self.teams[1]+' will win'}) 
+        options.append({'draw': 'draw/tie'})  
         return options 
     
     def GetOptionsDict(self):  

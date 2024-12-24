@@ -15,8 +15,6 @@ go to aws console and add the environment variables manually
 6) zappa udpate dev 
 this should work.  
 
-to update from a working local dev setup, run ```zappa update dev```
-
 
 ===== to update code/ deployment ==== 
 1. make sure zappa is installed via pip
