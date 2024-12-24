@@ -17,20 +17,7 @@ from ..DynamoAccess import DynamoAccess
 dynamo_access = DynamoAccess() 
 display_helper = FantasyPointsDisplayHelper() 
 
-
-@fantasyContest.route('/', methods=['GET', 'POST'])
-def displayActiveGames(): 
-    active_games_list = dynamo_access.GetActiveGamesByIdAndTitle()
-    
-    form= ActiveGamesForm() 
-    form.game_selection.choices=active_games_list 
-
-    if form.validate_on_submit(): 
-        selected_game_id=form.game_selection.data   
-        return redirect(url_for('fantasyContest.displayContestRanking', match_id=selected_game_id))
-
-    return render_template('fantasyContest/displayActiveGames.html',form=form) 
-
+ 
 @fantasyContest.route('/getActiveGames', methods=['GET'])
 def getActiveGames(): 
     active_games_list = dynamo_access.GetActiveGamesByIdTitleImage() 

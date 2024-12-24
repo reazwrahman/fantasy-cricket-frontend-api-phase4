@@ -8,11 +8,11 @@ class MatchPredictionHelper(object):
         self.teams = self.dynamo_access.GetTeamNames(self.match_id) 
         self.options_dict = None
     
-    def GetAllOptions(self) -> List[Dict[str,str]]: 
-        options = []
-        options.append ({'team1':self.teams[0]+' will win'})  
-        options.append ({'team2':self.teams[1]+' will win'}) 
-        options.append({'draw': 'draw/tie'})  
+    def GetAllOptions(self) -> Dict[str,str]: 
+        options = dict()
+        options['team1'] = self.teams[0]+' will win'
+        options['team2'] = self.teams[1]+' will win'
+        options['draw'] = 'draw/tie'  
         return options 
     
     def GetOptionsDict(self):  
