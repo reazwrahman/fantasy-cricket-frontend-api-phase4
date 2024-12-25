@@ -7,7 +7,7 @@ from ast import literal_eval
 from ast import literal_eval 
 from typing import List, Dict
 from datetime import datetime
-from pytz import timezone
+from pytz import timezone, utc
 
 from . import squadSelection
 from .. import db
@@ -168,12 +168,14 @@ def __convert_to_milliseconds(time:str):
     timestamp.append(0)  # add seconds 
 
     est = timezone("America/New_York")
-    dt_aware = est.localize(datetime(*timestamp))
+    est_date_time = est.localize(datetime(*timestamp)) 
+    utc_date_time = est_date_time.astimezone(utc)
     
     # Get the milliseconds timestamp
-    milliseconds_timestamp = int(dt_aware.timestamp() * 1000)
+    # est_ms = int(dt_aware.timestamp() * 1000) 
+    # utc_ms = est_ms.astimezone(utc)
 
-    return milliseconds_timestamp 
+    return int(utc_date_time.timestamp() * 1000)
 
 def __transform_players_dict(players_dict:dict):  
     result:list[dict] = []
