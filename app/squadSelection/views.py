@@ -72,7 +72,7 @@ def submitSquad():
     if (checkIfWindowExpired(game_start_time=game_start_time)):
         return jsonify({"error": "Submission window has expired"}), 410  
     
-    #dynamo_access.AddSelectedSquad(match_id, user_id, fantasy_squad) TODO
+    dynamo_access.AddSelectedSquad(match_id, user_id, fantasy_squad)
     
     return jsonify({"message": "Squad Submitted!"}), 200
     
@@ -126,7 +126,7 @@ def viewMySquad():
     else:
         return jsonify({"error": "Squad not found for the given user."}), 404
 
-
+''' ---------------------- HELPER METHODS --------------------------'''
 def __convert_to_milliseconds(time:str):   
     timestamp:list[int] = literal_eval(time)
     timestamp.append(0)  # add seconds 
