@@ -4,12 +4,10 @@ from numpy import full
 from flask import render_template, redirect, request, url_for, flash, session, jsonify
 from flask_login import current_user, login_required
 from ast import literal_eval
-from datetime import datetime, timedelta
-from pytz import timezone 
 from ast import literal_eval 
 from typing import List, Dict
-
-import pytz
+from datetime import datetime
+from pytz import timezone
 
 from . import squadSelection
 from .. import db
@@ -49,7 +47,6 @@ def getFullMatchSquad():
                 } 
 
     return jsonify(full_squad), 200 
-
 
 @squadSelection.route('/submitSquad', methods=['GET', 'POST']) 
 def submitSquad():  
@@ -170,9 +167,11 @@ def __convert_to_milliseconds(time:str):
     timestamp:list[int] = literal_eval(time)
     timestamp.append(0)  # add seconds 
 
-    timestamp = datetime(*timestamp)
+    est = timezone("America/New_York")
+    dt_aware = est.localize(datetime(*timestamp))
+    
     # Get the milliseconds timestamp
-    milliseconds_timestamp = int(timestamp.timestamp() * 1000)
+    milliseconds_timestamp = int(dt_aware.timestamp() * 1000)
 
     return milliseconds_timestamp 
 
