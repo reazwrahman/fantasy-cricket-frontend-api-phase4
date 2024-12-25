@@ -35,7 +35,7 @@ def getFullMatchSquad():
     bowlers_dict= squad_operator.GetNonOverlappingPlayers(batters_dict)
 
     match_prediction_helper = MatchPredictionHelper(selected_match_id)
-    match_predictions:Dict[str,str] = match_prediction_helper.GetAllOptions()
+    match_predictions = match_prediction_helper.GetAllOptions()
 
     full_squad = {   
                 'start_time': game_start_time, 
