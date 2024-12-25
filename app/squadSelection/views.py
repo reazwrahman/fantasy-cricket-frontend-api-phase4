@@ -1,3 +1,5 @@
+import time
+from zoneinfo import ZoneInfo
 from numpy import full
 from flask import render_template, redirect, request, url_for, flash, session, jsonify
 from flask_login import current_user, login_required
@@ -6,6 +8,8 @@ from datetime import datetime, timedelta
 from pytz import timezone 
 from ast import literal_eval 
 from typing import List, Dict
+
+import pytz
 
 from . import squadSelection
 from .. import db
@@ -47,9 +51,34 @@ def getFullMatchSquad():
     return jsonify(full_squad), 200 
 
 
+@squadSelection.route('/submitSquad', methods=['GET', 'POST']) 
+def submitSquad():  
+    data = request.get_json()
+    email = data["email"]
+    user_id = data["user_id"]
+    match_id = data["match_id"] 
+    fantasy_squad = data["fantasy_squad"] 
+    token = request.headers.get("Authorization") 
+
+    user: User = dynamo_access.GetUserByEmail(email)
+
+    if not token or not auth_helper.validate_jwt(token=token, user_email=email):
+        return jsonify({"error": "Invalid login credentials"}), 403   
+    
+    ## check for game start time 
+    game_start_time:str = __convert_to_milliseconds(dynamo_access.GetGameStartTime(match_id)) 
+    current_time_millis = int(time.time() * 1000)
+
+    if (checkIfWindowExpired(game_start_time=game_start_time)):
+        return jsonify({"error": "Submission window has expired"}), 410  
+    
+    #dynamo_access.AddSelectedSquad(match_id, user_id, fantasy_squad) TODO
+    
+    return jsonify({"message": "Squad Submitted!"}), 200
+    
+
 @squadSelection.route("/viewMySquad", methods=["POST"])
 def viewMySquad():
-    print("hello world")
     data = request.get_json()
     email = data["email"]
     user_id = data["user_id"]
@@ -118,4 +147,13 @@ def __transform_players_dict(players_dict:dict):
     
     return result
 
+def checkIfWindowExpired(game_start_time:int): 
+    current_time_utc = datetime.now(ZoneInfo("UTC"))
+    current_time_est = current_time_utc.astimezone(ZoneInfo("America/New_York")) # Convert to EST
 
+    # Convert to milliseconds
+    current_time_millis = int(current_time_est.timestamp() * 1000) 
+
+    # Compare with game start time
+    if current_time_millis > game_start_time:
+        return jsonify({"error": "Submission window has expired"}), 410
