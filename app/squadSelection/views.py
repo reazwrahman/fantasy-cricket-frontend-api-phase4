@@ -67,10 +67,13 @@ def submitSquad():
     
     ## check for game start time 
     game_start_time:str = __convert_to_milliseconds(dynamo_access.GetGameStartTime(match_id)) 
-    current_time_millis = int(time.time() * 1000)
-
-    if (checkIfWindowExpired(game_start_time=game_start_time)):
-        return jsonify({"error": "Submission window has expired"}), 410  
+    if (__check_if_window_expired(game_start_time=game_start_time)):
+        return jsonify({"error": "Submission window has expired"}), 410   
+    
+    ## check for other validation errors
+    error_found, error_message = __find_validation_error(fantasy_squad)
+    if error_found: 
+        return jsonify({"error": error_message}), 410  
     
     dynamo_access.AddSelectedSquad(match_id, user_id, fantasy_squad)
     
@@ -126,6 +129,42 @@ def viewMySquad():
     else:
         return jsonify({"error": "Squad not found for the given user."}), 404
 
+@squadSelection.route("/getSquadMetaData", methods=["POST"])
+def getSquadMetaData():
+    data = request.get_json()
+    email = data["email"]
+    user_id = data["user_id"]
+    match_id = data["match_id"]
+    token = request.headers.get("Authorization") 
+
+    user: User = dynamo_access.GetUserByEmail(email)
+
+    if not token or not auth_helper.validate_jwt(token=token, user_email=email):
+        return jsonify({"error": "Invalid authorization token"}), 403 
+    
+    if user.id != user_id: 
+        return jsonify({"error": "You are not authorized to view this resource"}), 403
+
+    squad_selection = dynamo_access.GetUserSelectedSquad(match_id, user_id)
+    
+
+    if squad_selection is not None:
+        selected_squad = squad_selection["selected_squad"]
+        captain = squad_selection["captain"]
+        vice_captain = squad_selection["vice_captain"] 
+        result_prediction = squad_selection["result_prediction"]
+        
+        display_dict = {
+            "selected_squad": selected_squad,
+            "captain": captain,
+            "vice_captain": vice_captain,
+            "result_prediction": result_prediction,
+        }
+        return jsonify(display_dict), 200
+    else:
+        return jsonify({"error": "Squad not found for the given user."}), 404
+
+
 ''' ---------------------- HELPER METHODS --------------------------'''
 def __convert_to_milliseconds(time:str):   
     timestamp:list[int] = literal_eval(time)
@@ -147,7 +186,7 @@ def __transform_players_dict(players_dict:dict):
     
     return result
 
-def checkIfWindowExpired(game_start_time:int): 
+def __check_if_window_expired(game_start_time:int): 
     current_time_utc = datetime.now(ZoneInfo("UTC"))
     current_time_est = current_time_utc.astimezone(ZoneInfo("America/New_York")) # Convert to EST
 
@@ -157,3 +196,15 @@ def checkIfWindowExpired(game_start_time:int):
     # Compare with game start time
     if current_time_millis > game_start_time:
         return jsonify({"error": "Submission window has expired"}), 410
+
+def __find_validation_error(fantasy_squad):  
+    if fantasy_squad["captain"] == fantasy_squad["vice_captain"]: 
+        return True, "Captain and Vice Captain must be different players" 
+    
+    if len(fantasy_squad["selected_squad"]) > 11: 
+        return True, "Squad can not exceed 11 players"
+
+    if len(fantasy_squad["selected_squad"]) != len(set(fantasy_squad["selected_squad"])): 
+        return True, "Every player in the squad must be unique" 
+    
+    return False, ""

@@ -243,7 +243,7 @@ def password_reset():
 
 
 @auth.route("/changeUsername", methods=["POST"])
-def change_email_request():
+def change_user_name():
     data = request.get_json()
     token = request.headers.get("Authorization")
     if (
@@ -252,8 +252,13 @@ def change_email_request():
         or "new_username" not in data
         or "user_id" not in data
     ):
-        print('something is missing')
-        return jsonify({"error": "Bad Reqeust"}), 400
+        return jsonify({"error": "Bad Reqeust"}), 400 
+    
+    if not dynamo_access.CheckIfUserNameIsUnique(data.get("new_username")):
+        return (
+            jsonify({"error": "This username is already taken"}),
+            400,
+        )
 
     if token and auth_helper.validate_jwt(token=token, user_email=data.get("email")):
         user: User = dynamo_access.GetUserById(user_id=data.get("user_id"))
