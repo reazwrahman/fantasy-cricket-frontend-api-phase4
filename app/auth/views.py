@@ -252,8 +252,8 @@ def change_user_name():
         or "new_username" not in data
         or "user_id" not in data
     ):
-        return jsonify({"error": "Bad Reqeust"}), 400 
-    
+        return jsonify({"error": "Bad Reqeust"}), 400
+
     if not dynamo_access.CheckIfUserNameIsUnique(data.get("new_username")):
         return (
             jsonify({"error": "This username is already taken"}),
@@ -280,3 +280,22 @@ def change_user_name():
     else:
         return jsonify({"error": "invalid authorization token"}), 403
 
+
+@auth.route("/refreshToken", methods=["POST"])
+def refreshToken():
+    data = request.get_json()
+    email = data.get("email")
+    token = request.headers.get("Authorization")
+
+    if token and auth_helper.validate_jwt(token=token, user_email=email):
+        return (
+            jsonify(
+                {
+                    "message": "refresh successful",
+                    "token": auth_helper.generate_jwt(email),
+                }
+            ),
+            200,
+        )
+    else:
+        return jsonify({"error": "invalid authorization token"}), 403
