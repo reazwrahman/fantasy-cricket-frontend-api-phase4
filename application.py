@@ -1,4 +1,6 @@
-import os
+import os 
+from flask_cors import CORS 
+import decouple
 
 COV = None
 if os.environ.get('FLASK_COVERAGE'):
@@ -13,7 +15,8 @@ from app import create_app, db
 from app.models import User, GameDetails 
 
 app = create_app("aws")
-migrate = Migrate(app, db) 
+# migrate = Migrate(app, db)  
+CORS(app)
 
 
 
@@ -59,7 +62,10 @@ def profile(length, profile_dir):
     app.run()
 
 
-if __name__ == "__main__":   
-    app.run()  
-    ## for local machine testing 
-    ##app.run (debug=True, port=5001, host='0.0.0.0')
+if __name__ == "__main__":  
+    RUNNING_ENV:str = decouple.config("RUNNING_ENV") 
+    if RUNNING_ENV == "LOCAL": 
+        app.run (debug=True, port=5001, host='0.0.0.0') 
+    else: 
+        app.run()  
+    

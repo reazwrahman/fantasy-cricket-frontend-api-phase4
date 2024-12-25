@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, abort, flash, request,\
-    current_app, make_response
+    current_app, make_response, jsonify
 from flask_login import login_required, current_user
 from flask_sqlalchemy import get_debug_queries
 from . import main
@@ -37,13 +37,7 @@ def server_shutdown():
 
 @main.route('/', methods=['GET', 'POST'])
 def index():  
-    isAdmin=False
-
-    if current_user.is_authenticated:
-        user_object=dynamo_access.GetUserById(current_user.id)
-        isAdmin=user_object.is_administrator()
-    
-    return render_template('index.html', isAdmin=isAdmin)
+    return jsonify("OK"), 200
 
 
 

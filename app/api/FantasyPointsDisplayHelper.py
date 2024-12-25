@@ -1,6 +1,7 @@
 from typing import List, Dict 
 from datetime import datetime
-import pytz
+import pytz 
+import json
 
 ''' 
 used by frontend to create display dataframes 
@@ -9,6 +10,30 @@ class FantasyPointsDisplayHelper(object):
     def __init__(self): 
         pass   
 
+    def transform_active_games(self, entries:list[list]) -> dict:
+        # Transform list of lists into list of dictionaries
+        transformed_data = [
+            {"id": game_id, "title": title, "image": image, "scorecard":scorecard, "squad_link":squad_link} 
+                for game_id, title, image, scorecard, squad_link in entries
+        ]
+        return transformed_data 
+       
+    def convertRankingToDict(self, fantasy_data:list) -> dict: 
+        rankings = [
+            {
+                "rank": entry[0],
+                "name": entry[1],
+                "score": entry[2],
+                "id": entry[3]
+            }
+            for entry in fantasy_data
+        ]
+
+        # Create the final JSON structure
+        result = {"rankings": rankings}
+    
+        # Convert the result to Dictionary format
+        return result
 
     def GetTimeDeltaMessage(self, last_updated_time): 
 
@@ -32,14 +57,16 @@ class FantasyPointsDisplayHelper(object):
         
         return fantasy_ranking
     
-    def AddMedalsToRanking(self, fantasy_ranking):               
-                    ## BRONZE, SILVER, GOLD EMOJI
+    def AddMedalsToRanking(self, fantasy_ranking:dict) ->dict:               
+                    ## BRONZE, SILVER, GOLD EMOJI 
+        ranking = fantasy_ranking["rankings"]
         medals = [u"\U0001F949", u"\U0001F948", u"\U0001F947"]
         i = 0 
-        while i < len(fantasy_ranking) and len(medals) > 0:
+        while i < len(ranking) and len(medals) > 0:
             curr_medal = medals.pop() 
-            fantasy_ranking[i][0] += curr_medal 
+            ranking[i]['medal'] = curr_medal 
             i+=1 
+        
         return fantasy_ranking
 
 

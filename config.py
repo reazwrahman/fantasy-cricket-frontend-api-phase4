@@ -4,7 +4,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
+    RUNNING_ENV = decouple.config('RUNNING_ENV')
+    SECRET_KEY = decouple.config('SECRET_KEY')
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in \
@@ -42,7 +43,7 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = decouple.config('PROD_DATABASE_URL')
+    #SQLALCHEMY_DATABASE_URI = decouple.config('PROD_DATABASE_URL')
 
     @classmethod
     def init_app(cls, app):
@@ -90,7 +91,6 @@ class HerokuConfig(ProductionConfig):
         app.logger.addHandler(file_handler) 
 
 class AwsConfig(ProductionConfig):
-    
     @classmethod
     def init_app(cls, app):
         ProductionConfig.init_app(app)

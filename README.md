@@ -13,7 +13,7 @@ to launch a new zappa deployment:
 this will fail. 
 go to aws console and add the environment variables manually 
 6) zappa udpate dev 
-this should work. 
+this should work.  
 
 
 ===== to update code/ deployment ==== 

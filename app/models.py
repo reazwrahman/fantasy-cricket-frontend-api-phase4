@@ -57,7 +57,7 @@ class User(UserMixin):
     def verify_password(self, password): 
         return check_password_hash(self.password_hash, password)
 
-    def generate_confirmation_token(self, expiration=3600):
+    def generate_confirmation_token(self, expiration=3600): 
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
         return s.dumps({'confirm': self.id}).decode('utf-8')
 
@@ -87,6 +87,7 @@ class User(UserMixin):
          ## has to be imported here to avoid circular dependencies
         from app.DynamoAccess import DynamoAccess 
         dynamo_access = DynamoAccess()
+        
         user = dynamo_access.GetUserById(data.get('reset'))
         if user is None:
             return False

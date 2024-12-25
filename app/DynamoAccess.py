@@ -33,6 +33,24 @@ class DynamoAccess(object):
         active_games = [] 
         for each in json_list: 
             active_games.append((each['match_id'], each['game_title']))  
+        return active_games   
+    
+    def GetActiveGamesByIdTitleImage(self): 
+        response = self.match_table.scan(
+                    FilterExpression=Attr("game_status").eq('Active')
+                    ) 
+        json_list = json.loads(json.dumps(response["Items"], use_decimal=True))
+        active_games = [] 
+        for each in json_list:  
+            entry = [each['match_id'], each['game_title'], "", "", ""] 
+            if 'image' in each: 
+                entry[2] = each['image']  
+            if "scorecard_link" in each["scorecard_details"]: 
+                entry[3] = each["scorecard_details"]["scorecard_link"] 
+            if "squad_link" in each: 
+                entry[4] = each["squad_link"]
+            active_games.append(entry)
+        
         return active_games  
     
     
@@ -421,7 +439,8 @@ class DynamoAccess(object):
             return None 
         else:   
             user_object = User(**json_list[0])
-            return user_object 
+            return user_object  
+    
            
     
            
