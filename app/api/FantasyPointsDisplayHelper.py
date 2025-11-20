@@ -1,4 +1,5 @@
-from typing import List, Dict 
+from ast import literal_eval
+from typing import List, Dict, Any
 from datetime import datetime
 import pytz 
 import json
@@ -10,13 +11,15 @@ class FantasyPointsDisplayHelper(object):
     def __init__(self): 
         pass   
 
-    def transform_active_games(self, entries:list[list]) -> dict:
+    def transform_active_games(self, entries:list[list]) -> list[dict[str, Any]]:
         # Transform list of lists into list of dictionaries
+        transformed_data = self.__sort_games_using_start_time__(entries)
         transformed_data = [
-            {"id": game_id, "title": title, "image": image, "scorecard":scorecard, "squad_link":squad_link} 
+            {"id": game_id, "title": title, "image": image, "scorecard":scorecard, "squad_link":squad_link}
                 for game_id, title, image, scorecard, squad_link in entries
         ]
-        return transformed_data 
+
+        return transformed_data
        
     def convertRankingToDict(self, fantasy_data:list) -> dict: 
         rankings = [
@@ -126,6 +129,26 @@ class FantasyPointsDisplayHelper(object):
                 display_list.append(local_list) 
         
         return [display_list, total_points]
+
+
+    def __sort_games_using_start_time__(self, active_games):
+        for i in range(len(active_games)):
+            start_time = literal_eval(active_games[i][-1])
+            weighted_sum = 0
+            for j in range(len(start_time)):
+                weight = 10 ** (len(start_time) - j - 1)
+                weighted_sum += start_time[j] * weight
+
+            active_games[i].append(weighted_sum)
+
+        active_games.sort(key=lambda x: x[-1])
+        active_games.reverse()
+
+        for each in active_games:
+            each.pop()
+            each.pop()
+
+        return active_games
 
                 
 
